@@ -1,0 +1,27 @@
+# Python Bytecode
+__pycache__/
+*.py[cod]
+
+# Database files
+store.db
+
+# Virtual Environment
+venv/
+env/
+*.env
+
+# IDE files (contoh untuk Visual Studio Code)
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Cache files
+*.cache
+*.log
+
+# Operating System files
+.DS_Store
+Thumbs.db
