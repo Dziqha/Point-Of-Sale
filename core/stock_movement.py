@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from .base_model import BaseModel
+from .lib import db
 
 class StockMovement(BaseModel):
     def __init__(self, product_id: int, user_id: int, movement_type: str, quantity_change: int, reason: str = ""):
@@ -12,15 +13,68 @@ class StockMovement(BaseModel):
         self.reason = reason
         self.created_at = datetime.now()
 
-    def save(self):
-        # Implementation to save stock movement to database
-        pass
+    def create(self):
+        conn, cursor = db.init_db()
+        cursor.execute('''INSERT INTO stock_movements (product_id, user_id, movement_type, quantity_change, reason, created_at)
+                          VALUES (?, ?, ?, ?, ?, ?)''',
+                       (self.product_id, self.user_id, self.movement_type, self.quantity_change, self.reason, self.created_at))
+        conn.commit()
+        affected_rows = cursor.rowcount
+        conn.close()
+        
+        if affected_rows > 0:
+            return f"Stock movement for product ID {self.product_id} created successfully."
+        else:
+            return f"Failed to create stock movement for product ID {self.product_id}."
+
+    def get_all(self):
+        conn, cursor = db.init_db()
+        cursor.execute('''SELECT * FROM stock_movements''')
+        movements = cursor.fetchall()
+        conn.close()
+        return movements
+    
+    def get_by_id(self, movement_id: int):
+        conn, cursor = db.init_db()
+        cursor.execute('''SELECT * FROM stock_movements WHERE movement_id = ?''', (movement_id,))
+        movement = cursor.fetchone()
+        conn.close()
+        return movement
+
+    def update(self):
+        if self.movement_id is None:
+            raise ValueError("Movement ID is required to update a stock movement.")
+    
+        conn, cursor = db.init_db()
+        cursor.execute('''UPDATE stock_movements SET product_id = ?, user_id = ?, movement_type = ?, quantity_change = ?, reason = ? WHERE movement_id = ?''',
+                       (self.product_id, self.user_id, self.movement_type, self.quantity_change, self.reason, self.movement_id))
+        conn.commit()
+        affected_rows = cursor.rowcount
+        conn.close()
+        
+        if affected_rows > 0:
+            return f"Stock movement ID {self.movement_id} updated successfully."
+        else:
+            return f"Failed to update stock movement ID {self.movement_id} or it does not exist."
 
     def delete(self):
-        # Implementation to delete stock movement from database
-        pass
+        if self.movement_id is None:
+            raise ValueError("Movement ID is required to delete a stock movement.")
+        
+        conn, cursor = db.init_db()
+        cursor.execute('''DELETE FROM stock_movements WHERE movement_id = ?''', (self.movement_id,))
+        conn.commit()
+        affected_rows = cursor.rowcount
+        conn.close()
+        
+        if affected_rows > 0:
+            return f"Stock movement ID {self.movement_id} deleted successfully."
+        else:
+            return f"Failed to delete stock movement ID {self.movement_id} or it does not exist."
 
-    @classmethod
-    def get_by_id(cls, id):
-        # Implementation to retrieve stock movement by ID
-        pass
+    def get_by_product_id(self, product_id: int):
+        conn, cursor = db.init_db()
+        cursor.execute('''SELECT * FROM stock_movements WHERE product_id = ?''', (product_id,))
+        movements = cursor.fetchall()
+        conn.close()
+        return movements

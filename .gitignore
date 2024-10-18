@@ -6,7 +6,7 @@ __pycache__/
 store.db
 
 # Virtual Environment
-venv/
+.venv/
 env/
 *.env
 

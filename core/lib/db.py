@@ -10,7 +10,7 @@ def get_db():
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
         username VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) CHECK (role IN ('cashier', 'admin')) NOT NULL,
+        role VARCHAR(7) CHECK (role IN ('cashier', 'admin')) NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     ''')
@@ -21,9 +21,10 @@ def get_db():
         product_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         sku VARCHAR(50) NOT NULL UNIQUE,
+        barcode VARCHAR(50) NOT NULL UNIQUE,
         category_id INTEGER,
-        stock INTEGER DEFAULT 0,  -- Track current stock level
-        price DECIMAL(10, 2) NOT NULL,
+        stock INTEGER DEFAULT 0,
+        price INTEGER(10) NOT NULL,
         description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -47,9 +48,9 @@ def get_db():
         movement_id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id INTEGER,
         user_id INTEGER,
-        movement_type VARCHAR(50) CHECK (movement_type IN ('Stock In', 'Stock Out', 'Stock Lost')) NOT NULL,
-        quantity_change INTEGER NOT NULL,  -- Positive for Stock In, Negative for Stock Out/Lost
-        reason TEXT,  -- Explanation for the stock movement (optional)
+        movement_type VARCHAR(4) CHECK (movement_type IN ('in', 'out', 'lost')) NOT NULL,
+        quantity_change INTEGER NOT NULL,
+        reason TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (product_id) REFERENCES products(product_id),
         FOREIGN KEY (user_id) REFERENCES users(user_id)

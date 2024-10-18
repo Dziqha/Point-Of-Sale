@@ -1,4 +1,3 @@
-
 # Point of Sale (POS) 🎉
 
 Point of Sale adalah aplikasi manajemen penjualan yang memungkinkan pengguna untuk mengelola produk, transaksi, dan voucher dengan mudah. Aplikasi ini dirancang untuk membantu bisnis dalam mengelola penjualan secara efisien.
@@ -7,6 +6,7 @@ Point of Sale adalah aplikasi manajemen penjualan yang memungkinkan pengguna unt
 
 - **Manajemen Pengguna**: Daftar, login, dan logout pengguna.
 - **Manajemen Produk**: Tambah, hapus, dan tampilkan produk.
+- **Manajemen Stok**: Memanajemen pergerakan stok.
 - **Manajemen Transaksi**: Tambah dan hapus item dalam transaksi.
 - **Penerapan Voucher**: Terapkan voucher diskon pada transaksi.
 - **Pembuatan Invoice**: Generate invoice untuk transaksi yang dilakukan.
@@ -19,11 +19,7 @@ Point of Sale adalah aplikasi manajemen penjualan yang memungkinkan pengguna unt
 
 ## Prasyarat 📋
 
-Sebelum menjalankan aplikasi, pastikan Anda memiliki Python 3.x terinstal di sistem Anda. Anda juga perlu menginstal Eel dan dependensi lainnya. Gunakan perintah berikut untuk menginstal dependensi yang diperlukan:
-
-```bash
-pip install eel
-```
+Sebelum menjalankan aplikasi, pastikan Anda memiliki Python 3.x terinstal di sistem Anda (Python 3.12 digunakan pada saat proses development).
 
 ## Instalasi 🚀
 
@@ -39,10 +35,10 @@ pip install eel
    cd point-of-sale
    ```
 
-3. Inisialisasi database:
+3. Install dependensi:
 
    ```bash
-   python db.py
+   pip install -r requirements.txt
    ```
 
 4. Jalankan aplikasi:
