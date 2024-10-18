@@ -1,7 +1,10 @@
-from datetime import datetime
+import jwt
+from datetime import datetime, timedelta
 from typing import Optional
 from .base_model import BaseModel
-from .lib import db
+from core.lib import db
+
+SECRET_KEY = "super_duper_secret_key"
 
 class User(BaseModel):
     def __init__(self, username: str, password: str, role: str):
@@ -13,7 +16,7 @@ class User(BaseModel):
 
     def create(self) -> str:
         conn, cursor = db.init_db()
-        cursor.execute('''INSERT INTO users (username, password, raole, created_at) 
+        cursor.execute('''INSERT INTO users (username, password, role, created_at) 
                           VALUES (?, ?, ?, ?)''', 
                        (self.username, self.password, self.role, self.created_at))
         conn.commit()
@@ -81,10 +84,24 @@ class User(BaseModel):
             self.username = user[1]
             self.password = user[2]
             self.role = user[3]
-        return self
 
-    def logout(self) -> str:
-        self.user_id = None
-        self.username = None
-        self.role = None
-        return "User logged out successfully."
+            session_data = {
+                'user_id': self.user_id,
+                'username': self.username,
+                'role': self.role,
+                'exp': datetime.utcnow() + timedelta(hours=1)
+            }
+            token = jwt.encode(session_data, SECRET_KEY, algorithm="HS256")
+
+            return token
+        else:
+            return None
+
+    def get_current_session(self, token: str) -> Optional[dict]:
+        try:
+            session_data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            return session_data
+        except jwt.ExpiredSignatureError:
+            return {"error": "Session expired. Please log in again."}
+        except jwt.InvalidTokenError:
+            return {"error": "Invalid session token."}

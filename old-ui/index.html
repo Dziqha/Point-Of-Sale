@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POSitive+ Stay Positive</title>
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script type="text/javascript" src="/eel.js"></script>
+  </head>
+  <body data-bs-theme="dark">
+    <div class="flex items-center justify-center h-screen">
+      <div class="card w-96 rounded-xl">
+        <div class="card-body p-4">
+          <div class="flex w-full items-center justify-center mb-4">
+            <img src="assets/images/logo.png" width="100" alt="Logo" />
+          </div>
+          <h4 class="text-center text-white mb-4">Welcome Back!</h4>
+          <form id="loginForm">
+            <div class="mb-4">
+              <label for="username" class="form-label text-white"
+                >Username</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                placeholder="Enter your username"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label for="password" class="form-label text-white"
+                >Password</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary w-full mb-4">
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault(); // Prevent the form from refreshing the page
+
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          // Call the Python login function via Eel
+          const result = await eel.login(username, password)();
+
+          // Handle the response
+          if (result.success) {
+            if (result.role === "cashier") {
+              window.location.href = "pos/index.html";
+            } else if (result.role === "admin") {
+              window.location.href = "dashboard/index.html";
+            }
+          } else {
+            alert("Invalid username or password.");
+          }
+        });
+    </script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %} {% block content %}
+<h1>Dashboard</h1>
+<button onclick="logout()">Logout</button>
+
+<script type="text/javascript">
+  function logout() {
+    set_cookie("jwt", "", -1);
+
+    window.location.href = "../index.html";
+  }
+
+  function set_cookie(name, value, hours) {
+    let date = new Date();
+    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+</script>
+
+{% endblock %}

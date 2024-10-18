@@ -60,6 +60,10 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki Python 3.x terinstal di sis
 
 Kontribusi sangat diterima! Silakan buat issue atau pull request untuk menambahkan fitur baru atau memperbaiki bug.
 
+<a href="https://github.com/Hanfik27/Point-Of-Sale/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Hanfik27/Point-Of-Sale" />
+</a>
+
 ## Lisensi 📄
 
 Proyek ini dilisensikan di bawah [MIT License](LICENSE).

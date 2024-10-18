@@ -1,0 +1,81 @@
+{% extends "base.html" %} {% block content %}
+<div class="flex items-center justify-center h-screen">
+  <div class="card">
+    <div class="card-content">
+      <div class="content">
+        <div class="flex w-full items-center justify-center mb-4">
+          <img src="../assets/images/logo.png" width="100" alt="Logo" />
+        </div>
+        <h4 class="text-center text-white mb-4">Welcome Back!</h4>
+
+        <div class="field">
+          <label class="label">Username</label>
+          <div class="control has-icons-left has-icons-right">
+            <input
+              id="username"
+              class="input"
+              type="text"
+              placeholder="Input your username"
+            />
+            <span class="icon is-small is-left">
+              <i class="fas fa-user"></i>
+            </span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="control has-icons-left has-icons-right">
+            <input
+              id="password"
+              class="input"
+              type="password"
+              placeholder="Input your secret password"
+            />
+            <span class="icon is-small is-left">
+              <i class="fas fa-lock"></i>
+            </span>
+          </div>
+        </div>
+
+        <br />
+
+        <button class="button is-link w-full" onclick="login()">Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  async function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    const token = await eel.login(username, password)();
+
+    if (token) {
+      set_cookie("jwt", token, 1);
+
+      const sessionData = await eel.get_current_session(token)();
+
+      if (sessionData.role === "cashier") {
+        window.location.href = "pos/index.html";
+      } else if (sessionData.role === "admin") {
+        window.location.href = "dashboard/index.html";
+      } else {
+        alert("User role not recognized.");
+      }
+    } else {
+      alert("Login failed. Please check your credentials.");
+    }
+  }
+
+  eel.expose(set_cookie);
+
+  function set_cookie(name, value, hours) {
+    let date = new Date();
+    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+</script>
+
+{% endblock %}
