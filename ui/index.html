@@ -1,0 +1,33 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <title>Store Management</title>
+</head>
+<body>
+    <h1>Store Management</h1>
+
+    <h2>Add Product</h2>
+    <input id="productName" placeholder="Product Name">
+    <input id="productPrice" placeholder="Price" type="number">
+    <input id="productStock" placeholder="Stock" type="number">
+    <input id="productDescription" placeholder="Description">
+    <input id="productCategory" placeholder="Category">
+    <button onclick="addProduct()">Add Product</button>
+
+    <h2>Product List</h2>
+    <ul id="productList"></ul>
+
+    <h2>Transaction</h2>
+    <p id="transactionTotal">Total: $0.00</p>
+    <button onclick="processPayment()">Process Payment</button>
+    <button onclick="generateInvoice()">Generate Invoice</button>
+
+    <h2>Promotion</h2>
+    <button onclick="applyPromotion()">Apply Promotion</button>
+
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+</body>
+</html>
