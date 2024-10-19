@@ -41,6 +41,26 @@ function initializeModals() {
   });
 }
 
+function errorAlert(text) {
+  Toastify({
+    text: text,
+    close: true,
+    style: {
+      background: "hsl(348, 100%, 61%)	",
+    },
+  }).showToast();
+}
+
+function successAlert(text) {
+  Toastify({
+    text: text,
+    close: true,
+    style: {
+      background: "hsl(141, 71%, 48%)	",
+    },
+  }).showToast();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeModals();
 });

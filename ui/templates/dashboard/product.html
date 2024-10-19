@@ -1,0 +1,508 @@
+{% extends "/dashboard/base.html" %} {% block dashboard_content %}
+<h1 class="text-2xl">Products</h1>
+
+<!-- Add Product Button -->
+<div class="mt-8 mb-4">
+  <button
+    class="button is-primary is-small js-modal-trigger"
+    data-target="add-product-modal"
+  >
+    <i class="fas fa-plus mr-2"></i> Add Product
+  </button>
+</div>
+
+<!-- Search Products -->
+<div class="mb-4 flex items-center gap-2 max-w-xl">
+  <div class="select">
+    <select id="search-type">
+      <option value="name">By name</option>
+      <option value="barcode">By barcode</option>
+    </select>
+  </div>
+  <input
+    class="input"
+    type="text"
+    id="search-input"
+    placeholder="Search products"
+  />
+  <button class="button" onclick="searchProducts()">
+    <i class="fas fa-search mr-2"></i> Search
+  </button>
+</div>
+
+<!-- Product Table -->
+<table class="table">
+  <thead>
+    <tr>
+      <th><abbr title="Position">ID</abbr></th>
+      <th>Name</th>
+      <th>SKU</th>
+      <th>Barcode</th>
+      <th>Category</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="product-table-body"></tbody>
+</table>
+
+<!-- Add Product Modal -->
+<div id="add-product-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Add Product</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="add-product-name"
+            placeholder="Product name"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">SKU</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="add-product-sku"
+            placeholder="Product SKU"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Barcode</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="add-product-barcode"
+            placeholder="Product barcode"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Category</label>
+        <div class="control">
+          <div class="select">
+            <select id="add-product-category">
+              <option value="">Select category</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Price</label>
+        <div class="control">
+          <input
+            class="input"
+            type="number"
+            id="add-product-price"
+            placeholder="Product price"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+          <textarea
+            class="textarea"
+            id="add-product-description"
+            placeholder="Product description"
+          ></textarea>
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <button class="button is-success" onclick="addProduct()">
+          Add product
+        </button>
+        <button class="button">Cancel</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div id="edit-product-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Edit Product</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <input type="hidden" id="edit-product-id" />
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="edit-product-name"
+            placeholder="Product name"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">SKU</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="edit-product-sku"
+            placeholder="Product SKU"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Barcode</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="edit-product-barcode"
+            placeholder="Product barcode"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Category</label>
+        <div class="control">
+          <div class="select">
+            <select id="edit-product-category">
+              <option value="">Select category</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Price</label>
+        <div class="control">
+          <input
+            class="input"
+            type="number"
+            id="edit-product-price"
+            placeholder="Product price"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+          <textarea
+            class="textarea"
+            id="edit-product-description"
+            placeholder="Product description"
+          ></textarea>
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <button class="button is-success" onclick="updateProduct()">
+          Save changes
+        </button>
+        <button class="button">Cancel</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Delete Product Confirmation Modal -->
+<div id="delete-product-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Confirm Delete</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <p>Are you sure you want to delete this product?</p>
+      <p>This action cannot be undone.</p>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <button class="button is-danger" onclick="confirmDeleteProduct()">
+          Delete
+        </button>
+        <button class="button">Cancel</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Product Details Modal -->
+<div id="product-details-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Product Details</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div id="product-details-content"></div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button" onclick="closeProductDetailsModal()">Close</button>
+    </footer>
+  </div>
+</div>
+
+<script type="text/javascript">
+  let productToDelete = null;
+  let categories = [];
+
+  async function getProducts() {
+    const products = await eel.get_all_products()();
+    displayProducts(products);
+  }
+
+  async function getCategories() {
+    categories = await eel.get_all_categories()();
+    populateCategoryDropdowns(categories);
+  }
+
+  function populateCategoryDropdowns(categories) {
+    const addCategorySelect = document.getElementById("add-product-category");
+    const editCategorySelect = document.getElementById("edit-product-category");
+
+    categories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category.category_id;
+      option.textContent = category.name;
+      addCategorySelect.appendChild(option);
+      editCategorySelect.appendChild(option.cloneNode(true));
+    });
+  }
+
+  function getCategoryName(categoryId) {
+    const category = categories.find((c) => c.category_id == categoryId);
+    return category ? category.name : "N/A";
+  }
+
+  function displayProducts(products) {
+    const tableBody = document.getElementById("product-table-body");
+    tableBody.innerHTML = "";
+
+    if (Array.isArray(products)) {
+      products.forEach((product) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <th>${product.product_id}</th>
+          <td>${product.name}</td>
+          <td>${product.sku || ""}</td>
+          <td>${product.barcode}</td>
+          <td>${getCategoryName(product.category_id)}</td>
+          <td>${product.price}</td>
+          <td>${product.stock}</td>
+          <td>
+            <button class="button is-info is-small" onclick="showProductDetails(${
+              product.product_id
+            })">
+              <i class="fas fa-info-circle"></i>
+            </button>
+            <button class="button is-link is-small" onclick="editProduct(${
+              product.product_id
+            })">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="button is-danger is-small text-white" onclick="deleteProduct(${
+              product.product_id
+            })">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    } else {
+      console.error("Expected products to be an array but got:", products);
+    }
+  }
+
+  async function showProductDetails(productId) {
+    const product = await eel.get_product_by_id(productId)();
+    const detailsContent = document.getElementById("product-details-content");
+    detailsContent.innerHTML = `
+      <p><strong>ID:</strong> ${product.product_id}</p>
+      <p><strong>Name:</strong> ${product.name}</p>
+      <p><strong>SKU:</strong> ${product.sku || "N/A"}</p>
+      <p><strong>Barcode:</strong> ${product.barcode}</p>
+      <p><strong>Category:</strong> ${getCategoryName(product.category_id)}</p>
+      <p><strong>Price:</strong> ${product.price}</p>
+      <p><strong>Stock:</strong> ${product.stock}</p>
+      <p><strong>Description:</strong> ${product.description || "N/A"}</p>
+      <p><strong>Created At:</strong> ${new Date(
+        product.created_at
+      ).toLocaleString()}</p>
+      <p><strong>Updated At:</strong> ${new Date(
+        product.updated_at
+      ).toLocaleString()}</p>
+    `;
+    const modal = document.getElementById("product-details-modal");
+    modal.classList.add("is-active");
+  }
+
+  function closeProductDetailsModal() {
+    const modal = document.getElementById("product-details-modal");
+    modal.classList.remove("is-active");
+  }
+
+  async function addProduct() {
+    const name = document.getElementById("add-product-name").value;
+    const sku = document.getElementById("add-product-sku").value;
+    const barcode = document.getElementById("add-product-barcode").value;
+    const category_id = document.getElementById("add-product-category").value;
+    const price = document.getElementById("add-product-price").value;
+    const description = document.getElementById(
+      "add-product-description"
+    ).value;
+
+    if (!name || !barcode || !price) {
+      errorAlert("Please fill in all required fields.");
+      return;
+    }
+
+    const result = await eel.create_product(
+      name,
+      sku,
+      barcode,
+      category_id || null,
+      parseInt(price),
+      description
+    )();
+
+    successAlert(result);
+
+    document.getElementById("add-product-name").value = "";
+    document.getElementById("add-product-sku").value = "";
+    document.getElementById("add-product-barcode").value = "";
+    document.getElementById("add-product-category").value = "";
+    document.getElementById("add-product-price").value = "";
+    document.getElementById("add-product-description").value = "";
+
+    getProducts();
+  }
+
+  async function editProduct(productId) {
+    const product = await eel.get_product_by_id(productId)();
+
+    document.getElementById("edit-product-id").value = product.product_id;
+    document.getElementById("edit-product-name").value = product.name;
+    document.getElementById("edit-product-sku").value = product.sku;
+    document.getElementById("edit-product-barcode").value = product.barcode;
+    document.getElementById("edit-product-category").value =
+      product.category_id || "";
+    document.getElementById("edit-product-price").value = product.price;
+    document.getElementById("edit-product-description").value =
+      product.description;
+
+    const modal = document.getElementById("edit-product-modal");
+    modal.classList.add("is-active");
+  }
+
+  async function updateProduct() {
+    const id = document.getElementById("edit-product-id").value;
+    const name = document.getElementById("edit-product-name").value;
+    const sku = document.getElementById("edit-product-sku").value;
+    const barcode = document.getElementById("edit-product-barcode").value;
+    const category_id = document.getElementById("edit-product-category").value;
+    const price = document.getElementById("edit-product-price").value;
+    const description = document.getElementById(
+      "edit-product-description"
+    ).value;
+
+    if (!name || !barcode || !price) {
+      errorAlert("Please fill in all required fields.");
+      return;
+    }
+
+    const result = await eel.update_product(
+      id,
+      name,
+      sku,
+      barcode,
+      category_id || null,
+      0,
+      parseInt(price),
+      description
+    )();
+
+    successAlert(result);
+
+    const modal = document.getElementById("edit-product-modal");
+    modal.classList.remove("is-active");
+
+    getProducts();
+  }
+
+  function deleteProduct(productId) {
+    productToDelete = productId;
+    const modal = document.getElementById("delete-product-modal");
+    modal.classList.add("is-active");
+  }
+
+  async function confirmDeleteProduct() {
+    if (productToDelete) {
+      const result = await eel.delete_product(productToDelete)();
+      successAlert(result);
+      productToDelete = null;
+      const modal = document.getElementById("delete-product-modal");
+      modal.classList.remove("is-active");
+      getProducts();
+    }
+  }
+
+  async function searchProducts() {
+    const searchTerm = document.getElementById("search-input").value;
+    const searchType = document.getElementById("search-type").value;
+
+    let result;
+
+    switch (searchType) {
+      case "name":
+        result = await eel.search_products_by_name(searchTerm)();
+        break;
+      case "barcode":
+        const barcodeProduct = await eel.search_product_by_barcode(
+          searchTerm
+        )();
+
+        if (barcodeProduct == "Product not found") {
+          errorAlert("No products found.");
+        } else {
+          result = barcodeProduct ? [barcodeProduct] : [];
+        }
+        break;
+      default:
+        errorAlert("Invalid search type.");
+        return;
+    }
+
+    if (result.length === 0) {
+      errorAlert("No products found.");
+    } else {
+      displayProducts(result);
+    }
+  }
+
+  getProducts();
+  getCategories();
+</script>
+{% endblock %}

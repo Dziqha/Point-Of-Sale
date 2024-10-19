@@ -20,7 +20,7 @@ def get_db():
     CREATE TABLE IF NOT EXISTS products (
         product_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
-        sku VARCHAR(50) NOT NULL UNIQUE,
+        sku VARCHAR(50),
         barcode VARCHAR(50) NOT NULL UNIQUE,
         category_id INTEGER,
         stock INTEGER DEFAULT 0,

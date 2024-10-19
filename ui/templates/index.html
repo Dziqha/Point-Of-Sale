@@ -62,10 +62,10 @@
       } else if (sessionData.role === "admin") {
         window.location.href = "dashboard/index.html";
       } else {
-        alert("User role not recognized.");
+        errorAlert("User role not recognized.");
       }
     } else {
-      alert("Login failed. Please check your credentials.");
+      errorAlert("Login failed. Please check your credentials.");
     }
   }
 

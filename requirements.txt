@@ -1,2 +1,3 @@
 eel
 eel[jinja2]
+PyJWT
