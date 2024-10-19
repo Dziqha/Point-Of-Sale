@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Tuple, Any
 from .base_model import BaseModel
-from lib import db
+from core.lib import db
 
 class Customer(BaseModel):
     def __init__(self, name: str, email: str = "", phone: str = "", address: str = ""):
