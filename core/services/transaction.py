@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional, List, Tuple, Any
 from .base_model import BaseModel
-from lib import db
+from core.lib import db
 
 class Transaction(BaseModel):
     def __init__(self, user_id: int, customer_id: int, total: Decimal, discount: Decimal, final_total: Decimal, paid_amount: Decimal, return_amount: Decimal, voucher_id: Optional[int] = None):

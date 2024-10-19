@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional, List, Tuple
 from .base_model import BaseModel
-from lib import db
+from core.lib import db
 
 class Voucher(BaseModel):
     def __init__(self, code: str, discount_value: Decimal, expiration_date: datetime):

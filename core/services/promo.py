@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional, List, Tuple, Any
 from .base_model import BaseModel
-from lib import db
+from core.lib import db
 
 class Promo(BaseModel):
     def __init__(self, name: str, description: str, discount_percentage: Decimal, start_date: datetime, end_date: datetime):

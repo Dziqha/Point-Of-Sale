@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional, List, Tuple, Any
 from .base_model import BaseModel
-from lib import db
+from core.lib import db
 
 class TransactionItem(BaseModel):
     def __init__(self, transaction_id: int, product_id: int, quantity: int, price: Decimal, discount: Decimal, total: Decimal):
