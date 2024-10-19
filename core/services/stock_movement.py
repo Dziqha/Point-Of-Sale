@@ -20,10 +20,10 @@ class StockMovement(BaseModel):
                           VALUES (?, ?, ?, ?, ?, ?)''',
                        (self.product_id, self.user_id, self.movement_type, self.quantity_change, self.reason, self.created_at))
         
-        if self.movement_type == 'IN':
+        if self.movement_type == 'in':
             cursor.execute('''UPDATE products SET stock = stock + ? WHERE product_id = ?''',
                            (self.quantity_change, self.product_id))
-        elif self.movement_type == 'OUT':
+        elif self.movement_type == 'out':
             cursor.execute('''UPDATE products SET stock = stock - ? WHERE product_id = ?''',
                            (self.quantity_change, self.product_id))
 
@@ -38,7 +38,7 @@ class StockMovement(BaseModel):
 
     def get_all(self):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM stock_movements''')
+        cursor.execute('''SELECT * FROM stock_movements ORDER BY movement_id DESC;''')
         movements = cursor.fetchall()
         conn.close()
         return movements
@@ -50,6 +50,26 @@ class StockMovement(BaseModel):
         conn.close()
         return movement
 
+    def update(self):
+        if self.movement_id is None:
+            raise ValueError("Movement ID is required to update a stock movement.")
+        
+        conn, cursor = db.init_db()
+        cursor.execute('''UPDATE stock_movements 
+                          SET product_id = ?, user_id = ?, movement_type = ?, 
+                              quantity_change = ?, reason = ?
+                          WHERE movement_id = ?''',
+                       (self.product_id, self.user_id, self.movement_type,
+                        self.quantity_change, self.reason, self.movement_id))
+        conn.commit()
+        affected_rows = cursor.rowcount
+        conn.close()
+        
+        if affected_rows > 0:
+            return f"Stock movement ID {self.movement_id} updated successfully."
+        else:
+            return f"Failed to update stock movement ID {self.movement_id} or it does not exist."
+        
     def delete(self):
         if self.movement_id is None:
             raise ValueError("Movement ID is required to delete a stock movement.")
@@ -67,7 +87,7 @@ class StockMovement(BaseModel):
 
     def get_by_product_id(self, product_id: int):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM stock_movements WHERE product_id = ?''', (product_id,))
+        cursor.execute('''SELECT * FROM stock_movements WHERE product_id = ? ORDER BY movement_id DESC''', (product_id,))
         movements = cursor.fetchall()
         conn.close()
         return movements

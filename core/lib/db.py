@@ -106,12 +106,14 @@ def get_db():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS promos (
         promo_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER,
         name VARCHAR(100) NOT NULL,
         description TEXT,
         discount_percentage DECIMAL(5, 2) NOT NULL,
         start_date DATE NOT NULL,
         end_date DATE NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
     );
     ''')
 
@@ -120,6 +122,7 @@ def get_db():
     CREATE TABLE IF NOT EXISTS vouchers (
         voucher_id INTEGER PRIMARY KEY AUTOINCREMENT,
         code VARCHAR(50) NOT NULL UNIQUE,
+        quota INTEGER
         discount_value DECIMAL(10, 2) NOT NULL,
         expiration_date DATE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP

@@ -1,0 +1,276 @@
+{% extends "/dashboard/base.html" %} {% block dashboard_content %}
+<h1 class="text-2xl">Stock Movements</h1>
+
+<!-- Add Stock Movement Button -->
+<div class="mt-8 mb-4">
+  <button
+    class="button is-primary is-small js-modal-trigger"
+    data-target="add-stock-movement-modal"
+  >
+    <i class="fas fa-plus mr-2"></i> Add Stock Movement
+  </button>
+</div>
+
+<!-- Search Products -->
+<div class="mb-4 flex items-center gap-2 max-w-lg relative">
+  <input
+    class="input"
+    type="text"
+    id="search-input"
+    placeholder="Search product for stock movement"
+    oninput="searchProducts()"
+  />
+  <div
+    id="search-results"
+    class="absolute top-full left-0 w-full bg-gray-800 border border-gray-700 rounded-b shadow-md z-10"
+  ></div>
+  <button
+    id="clear-search"
+    class="button is-light is-hidden"
+    onclick="clearSearch()"
+  >
+    Clear
+  </button>
+</div>
+
+<!-- Stock Movements Table -->
+<table class="table" id="stock-movements-table">
+  <thead>
+    <tr>
+      <th><abbr title="Position">ID</abbr></th>
+      <th>Product</th>
+      <th>Admin</th>
+      <th>Qty Change</th>
+      <th>Reason</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="stock-movements-body"></tbody>
+</table>
+
+<!-- Add Stock Movement Modal -->
+<div id="add-stock-movement-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Add Stock Movement</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Product</label>
+        <div class="control relative">
+          <input
+            class="input"
+            type="text"
+            id="add-movement-product"
+            placeholder="Search product"
+            oninput="searchProductsForMovement()"
+          />
+          <div
+            id="product-search-results"
+            class="absolute top-full left-0 w-full bg-gray-800 border border-gray-700 rounded-b shadow-md z-10"
+          ></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Quantity Change</label>
+        <div class="control">
+          <input
+            class="input"
+            type="number"
+            id="add-movement-quantity"
+            placeholder="Enter quantity change"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Reason</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="add-movement-reason"
+            placeholder="Enter reason for stock movement"
+          />
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-success" onclick="addStockMovement()">
+        Add Movement
+      </button>
+      <button class="button" onclick="closeAddMovementModal()">Cancel</button>
+    </footer>
+  </div>
+</div>
+
+<script type="text/javascript">
+  let selectedProductId = null;
+
+  async function getAllStockMovements() {
+    const movements = await eel.get_all_stock_movements()();
+    displayStockMovements(movements);
+  }
+
+  async function searchProducts() {
+    const searchTerm = document.getElementById("search-input").value;
+    const resultsContainer = document.getElementById("search-results");
+
+    if (searchTerm.length < 2) {
+      resultsContainer.innerHTML = "";
+      resultsContainer.classList.add("hidden");
+      return;
+    }
+
+    const products = await eel.search_products_by_name(searchTerm)();
+    displaySearchResults(products, resultsContainer, selectProductForSearch);
+  }
+
+  function displaySearchResults(products, resultsContainer, onSelectCallback) {
+    resultsContainer.innerHTML = "";
+    resultsContainer.classList.remove("hidden");
+
+    products.forEach((product) => {
+      const productElement = document.createElement("div");
+      productElement.className =
+        "p-2 hover:bg-gray-700 cursor-pointer text-white";
+      productElement.innerHTML = `<p>${product.name} (${product.barcode})</p>`;
+      productElement.onclick = () => onSelectCallback(product);
+      resultsContainer.appendChild(productElement);
+    });
+  }
+
+  function selectProductForSearch(product) {
+    document.getElementById("search-input").value = product.name;
+    document.getElementById("search-results").innerHTML = "";
+    document.getElementById("search-results").classList.add("hidden");
+    showStockMovements(product.product_id);
+  }
+
+  function clearSearch() {
+    document.getElementById("search-input").value = "";
+    document.getElementById("search-results").innerHTML = "";
+    document.getElementById("search-results").classList.add("hidden");
+    document.getElementById("clear-search").classList.add("is-hidden");
+    getAllStockMovements();
+  }
+
+  async function showStockMovements(productId) {
+    const movements = await eel.get_stock_movements_by_product_id(productId)();
+    displayStockMovements(movements);
+  }
+
+  function displayStockMovements(movements) {
+    const tableBody = document.getElementById("stock-movements-body");
+    tableBody.innerHTML = "";
+
+    movements.forEach((movement) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${movement.movement_id}</td>
+        <td>${movement.product_id}</td>
+        <td>${movement.user_id}</td>
+        <td class="${
+          movement.movement_type === "out"
+            ? "has-text-danger"
+            : "has-text-success"
+        }">
+          ${movement.quantity_change}
+        </td>
+        <td>${movement.reason}</td>
+        <td>${new Date(movement.created_at).toLocaleString()}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  async function searchProductsForMovement() {
+    const searchTerm = document.getElementById("add-movement-product").value;
+    const resultsContainer = document.getElementById("product-search-results");
+
+    if (searchTerm.length < 2) {
+      resultsContainer.innerHTML = "";
+      resultsContainer.classList.add("hidden");
+      return;
+    }
+
+    const products = await eel.search_products_by_name(searchTerm)();
+    displaySearchResults(products, resultsContainer, selectProductForMovement);
+  }
+
+  function selectProductForMovement(product) {
+    document.getElementById("add-movement-product").value = product.name;
+    document.getElementById("product-search-results").innerHTML = "";
+    document.getElementById("product-search-results").classList.add("hidden");
+    selectedProductId = product.product_id;
+  }
+
+  async function addStockMovement() {
+    if (!selectedProductId) {
+      errorAlert("Please select a product");
+      return;
+    }
+
+    const quantityChange = parseInt(
+      document.getElementById("add-movement-quantity").value
+    );
+    const reason = document.getElementById("add-movement-reason").value;
+
+    if (isNaN(quantityChange) || reason.trim() === "") {
+      errorAlert("Please fill in all fields");
+      return;
+    }
+
+    const userId = getCurrentUserId();
+
+    const result = await eel.create_stock_movement(
+      selectedProductId,
+      userId,
+      quantityChange > 0 ? "in" : "out",
+      Math.abs(quantityChange),
+      reason
+    )();
+    successAlert(result);
+
+    closeAddMovementModal();
+    getAllStockMovements();
+  }
+
+  function closeAddMovementModal() {
+    document
+      .getElementById("add-stock-movement-modal")
+      .classList.remove("is-active");
+    document.getElementById("add-movement-product").value = "";
+    document.getElementById("add-movement-quantity").value = "";
+    document.getElementById("add-movement-reason").value = "";
+    document.getElementById("product-search-results").innerHTML = "";
+    document.getElementById("product-search-results").classList.add("hidden");
+    selectedProductId = null;
+  }
+
+  function getCurrentUserId() {
+    return 1;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const addButton = document.querySelector(
+      '[data-target="add-stock-movement-modal"]'
+    );
+    const modal = document.getElementById("add-stock-movement-modal");
+    const closeButtons = modal.querySelectorAll(
+      ".delete, .button:not(.is-success)"
+    );
+
+    addButton.addEventListener("click", () => {
+      modal.classList.add("is-active");
+    });
+
+    closeButtons.forEach((button) => {
+      button.addEventListener("click", closeAddMovementModal);
+    });
+
+    getAllStockMovements();
+  });
+</script>
+{% endblock %}

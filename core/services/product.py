@@ -50,9 +50,9 @@ class Product(BaseModel):
         self.updated_at = datetime.now()
 
         conn, cursor = db.init_db()
-        cursor.execute('''UPDATE products SET name = ?, sku = ?, barcode = ?, category_id = ?, stock = ?, price = ?, description = ?, updated_at = ? 
+        cursor.execute('''UPDATE products SET name = ?, sku = ?, barcode = ?, category_id = ?, price = ?, description = ?, updated_at = ? 
                           WHERE product_id = ?''', 
-                       (self.name, self.sku, self.barcode, self.category_id, self.stock, self.price, self.description, self.updated_at, self.product_id))
+                       (self.name, self.sku, self.barcode, self.category_id, self.price, self.description, self.updated_at, self.product_id))
         conn.commit()
         affected_rows = cursor.rowcount
         conn.close()

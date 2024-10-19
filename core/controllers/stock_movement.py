@@ -9,26 +9,49 @@ def create_stock_movement(product_id: int, user_id: int, movement_type: str, qua
 @eel.expose
 def get_all_stock_movements():
     movement = StockMovement(0, 0, '', 0)
-    return movement.get_all()
+    movements = movement.get_all()
+    return [
+        {
+            "movement_id": m[0],
+            "product_id": m[1],
+            "user_id": m[2],
+            "movement_type": m[3],
+            "quantity_change": m[4],
+            "reason": m[5],
+            "created_at": m[6]
+        } for m in movements
+    ]
 
 @eel.expose
 def get_stock_movement_by_id(movement_id: int):
     movement = StockMovement(0, 0, '', 0)
-    return movement.get_by_id(movement_id)
-
-@eel.expose
-def update_stock_movement(movement_id: int, product_id: int, user_id: int, movement_type: str, quantity_change: int, reason: str = ""):
-    movement = StockMovement(product_id=product_id, user_id=user_id, movement_type=movement_type, quantity_change=quantity_change, reason=reason)
-    movement.movement_id = movement_id
-    return movement.update()
-
-@eel.expose
-def delete_stock_movement(movement_id: int):
-    movement = StockMovement(0, 0, '', 0)
-    movement.movement_id = movement_id
-    return movement.delete()
+    m = movement.get_by_id(movement_id)
+    
+    if m is None:
+        return "Stock movement not found"
+    
+    return {
+        "movement_id": m[0],
+        "product_id": m[1],
+        "user_id": m[2],
+        "movement_type": m[3],
+        "quantity_change": m[4],
+        "reason": m[5],
+        "created_at": m[6]
+    }
 
 @eel.expose
 def get_stock_movements_by_product_id(product_id: int):
     movement = StockMovement(0, 0, '', 0)
-    return movement.get_by_product_id(product_id)
+    movements = movement.get_by_product_id(product_id)
+    return [
+        {
+            "movement_id": m[0],
+            "product_id": m[1],
+            "user_id": m[2],
+            "movement_type": m[3],
+            "quantity_change": m[4],
+            "reason": m[5],
+            "created_at": m[6]
+        } for m in movements
+    ]

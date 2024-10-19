@@ -10,8 +10,8 @@ def create_category(name: str, description: str = ""):
 def get_all_categories():
     category = Category('', '')
     rows = category.get_all()
-    
-    categories = [
+
+    return [
         {
             "category_id": row[0],
             "name": row[1],
@@ -20,7 +20,6 @@ def get_all_categories():
         }
         for row in rows
     ]
-    return categories
 
 @eel.expose
 def get_category_by_id(category_id: int):

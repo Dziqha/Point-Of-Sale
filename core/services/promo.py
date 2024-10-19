@@ -5,8 +5,9 @@ from .base_model import BaseModel
 from core.lib import db
 
 class Promo(BaseModel):
-    def __init__(self, name: str, description: str, discount_percentage: Decimal, start_date: datetime, end_date: datetime):
+    def __init__(self, product_id: Optional[int] = None, name: str = "", description: str = "", discount_percentage: Decimal = Decimal(0), start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
         self.promo_id: Optional[int] = None
+        self.product_id = product_id
         self.name = name
         self.description = description
         self.discount_percentage = discount_percentage
@@ -14,16 +15,22 @@ class Promo(BaseModel):
         self.end_date = end_date
         self.created_at = datetime.now()
 
-    def create(self) -> str:
-        conn, cursor = db.init_db()
-        if conn is None or cursor is None:
-            return "Database connection error."
+    def create(self):
+        con, cursor = db.init_db()
 
-        cursor.execute('''INSERT INTO promos (name, description, discount_percentage, start_date, end_date) 
-                          VALUES (?, ?, ?, ?, ?)''', 
-                       (self.name, self.description, self.discount_percentage, self.start_date, self.end_date))
-        conn.commit()
-        conn.close()
+        cursor.execute('''
+            INSERT INTO promos (product_id, name, description, discount_percentage, start_date, end_date)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            self.product_id,
+            self.name,
+            self.description,
+            float(self.discount_percentage),
+            self.start_date,
+            self.end_date
+        ))
+
+        con.commit()
 
         return f"Promo {self.name} saved to database." if cursor.rowcount > 0 else f"Failed to save promo {self.name}."
 
@@ -36,9 +43,9 @@ class Promo(BaseModel):
             return "Database connection error."
 
         cursor.execute('''UPDATE promos 
-                          SET name = ?, description = ?, discount_percentage = ?, start_date = ?, end_date = ? 
+                          SET product_id = ?, name = ?, description = ?, discount_percentage = ?, start_date = ?, end_date = ? 
                           WHERE promo_id = ?''', 
-                       (self.name, self.description, self.discount_percentage, self.start_date, self.end_date, self.promo_id))
+                       (self.product_id, self.name, self.description, float(self.discount_percentage), self.start_date, self.end_date, self.promo_id))
         conn.commit()
         conn.close()
 

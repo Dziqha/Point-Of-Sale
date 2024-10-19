@@ -12,7 +12,7 @@
   </div>
   <div class="relative">
     <button class="flex items-center focus:outline-none">
-      <span class="mr-2">User</span>
+      <span id="username" class="mr-2"></span>
       <i class="fa-solid fa-chevron-down"></i>
     </button>
     <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg hidden">
@@ -37,13 +37,13 @@
         </a>
       </li>
       <li class="mb-4">
-        <a href="#" class="flex items-center hover:underline">
+        <a href="stock.html" class="flex items-center hover:underline">
           <i class="fas fa-warehouse mr-2 w-5"></i>
           <span>Stock</span>
         </a>
       </li>
       <li class="mb-4">
-        <a href="#" class="flex items-center hover:underline">
+        <a href="promo.html" class="flex items-center hover:underline">
           <i class="fas fa-percentage mr-2 w-5"></i>
           <span>Promo</span>
         </a>
@@ -78,6 +78,7 @@
 <script>
   const dropdownButton = document.querySelector("nav button");
   const dropdownMenu = document.querySelector("nav .absolute");
+
   dropdownButton.addEventListener("click", () => {
     dropdownMenu.classList.toggle("hidden");
   });
@@ -92,6 +93,14 @@
     date.setTime(date.getTime() + hours * 60 * 60 * 1000);
     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
   }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    token = getCookie("jwt");
+    sessionData = await eel.get_current_session(token)();
+
+    const usernameElement = document.getElementById("username");
+    usernameElement.textContent = sessionData.username;
+  });
 </script>
 
 {% endblock %}
