@@ -1,0 +1,138 @@
+{% extends "/dashboard/base.html" %} {% block dashboard_content %}
+<h1 class="text-2xl">Category</h1>
+
+<!-- Add Category Button -->
+<div class="mt-8 mb-4">
+  <button
+    class="button is-primary is-small js-modal-trigger"
+    data-target="add-category-modal"
+  >
+    <i class="fas fa-plus mr-2"></i> Add Category
+  </button>
+</div>
+
+<!-- Category Table -->
+<table class="table">
+  <thead>
+    <tr>
+      <th><abbr title="Position">ID</abbr></th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Created At</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="category-table-body"></tbody>
+</table>
+
+<!-- Add Category Modal -->
+<div id="add-category-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Add Category</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="category-name"
+            placeholder="Category name"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="category-description"
+            placeholder="Category description"
+          />
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <button class="button is-success" onclick="addCategory()">
+          Add category
+        </button>
+        <button class="button">Cancel</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script type="text/javascript">
+  async function getCategories() {
+    const categories = await eel.get_all_categories()();
+    displayCategories(categories);
+  }
+
+  function displayCategories(categories) {
+    const tableBody = document.getElementById("category-table-body");
+    tableBody.innerHTML = "";
+
+    if (Array.isArray(categories)) {
+      categories.forEach((category) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                <th>${category.category_id}</th>
+                <td>${category.name}</td>
+                <td>${category.description}</td>
+                <td>${new Date(category.created_at).toLocaleString()}</td>
+                <td>
+                    <button class="button is-link is-small" onclick="editCategory(${
+                      category.category_id
+                    })">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="button is-danger is-small text-white" onclick="deleteCategory(${
+                      category.category_id
+                    })">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+        tableBody.appendChild(row);
+      });
+    } else {
+      console.error("Expected categories to be an array but got:", categories);
+    }
+  }
+
+  async function addCategory() {
+    const name = document.getElementById("category-name").value;
+    const description = document.getElementById("category-description").value;
+
+    if (!name) {
+      alert("Please enter a category name.");
+      return;
+    } else {
+      const result = await eel.create_category(name, description)();
+
+      alert(result);
+
+      document.getElementById("category-name").value = "";
+      document.getElementById("category-description").value = "";
+
+      getCategories();
+    }
+  }
+
+  function editCategory(categoryId) {
+    console.log(`Editing category ID: ${categoryId}`);
+  }
+
+  function deleteCategory(categoryId) {
+    console.log(`Deleting category ID: ${categoryId}`);
+  }
+
+  getCategories();
+</script>
+{% endblock %}

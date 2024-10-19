@@ -1,0 +1,98 @@
+<!-- /dashboard/base.html -->
+{% extends "base.html" %} {% block content %}
+<nav
+  class="flex justify-between items-center px-8 py-4 shadow"
+  role="navigation"
+  aria-label="main navigation"
+>
+  <div class="flex items-center">
+    <a class="flex items-center">
+      <img src="../../assets/images/logo.png" alt="Logo" class="h-12 w-auto" />
+    </a>
+  </div>
+  <div class="relative">
+    <button class="flex items-center focus:outline-none">
+      <span class="mr-2">User</span>
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg hidden">
+      <button class="block px-4 py-2 text-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="flex">
+  <div class="w-1/6 p-8 shadow h-screen">
+    <ul>
+      <li class="mb-4">
+        <a href="#" class="flex items-center hover:underline">
+          <i class="fas fa-box mr-2 w-5"></i>
+          <span>Product</span>
+        </a>
+      </li>
+      <li class="mb-4">
+        <a href="category.html" class="flex items-center hover:underline">
+          <i class="fas fa-tags mr-2 w-5"></i>
+          <span>Category</span>
+        </a>
+      </li>
+      <li class="mb-4">
+        <a href="#" class="flex items-center hover:underline">
+          <i class="fas fa-warehouse mr-2 w-5"></i>
+          <span>Stock</span>
+        </a>
+      </li>
+      <li class="mb-4">
+        <a href="#" class="flex items-center hover:underline">
+          <i class="fas fa-percentage mr-2 w-5"></i>
+          <span>Promo</span>
+        </a>
+      </li>
+      <li class="mb-4">
+        <a href="#" class="flex items-center hover:underline">
+          <i class="fas fa-ticket-alt mr-2 w-5"></i>
+          <span>Voucher</span>
+        </a>
+      </li>
+      <li class="mb-4">
+        <a href="#" class="flex items-center hover:underline">
+          <i class="fas fa-exchange-alt mr-2 w-5"></i>
+          <span>Transaction</span>
+        </a>
+      </li>
+      <li class="mb-4">
+        <a href="#" class="flex items-center hover:underline">
+          <i class="fas fa-users mr-2 w-5"></i>
+          <span>Customers</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="w-5/6 p-8">
+    {% block dashboard_content %}
+    <!-- Dashboard Page -->
+    {% endblock %}
+  </div>
+</div>
+
+<script>
+  const dropdownButton = document.querySelector("nav button");
+  const dropdownMenu = document.querySelector("nav .absolute");
+  dropdownButton.addEventListener("click", () => {
+    dropdownMenu.classList.toggle("hidden");
+  });
+
+  function logout() {
+    set_cookie("jwt", "", -1);
+    window.location.href = "../index.html";
+  }
+
+  function set_cookie(name, value, hours) {
+    let date = new Date();
+    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+</script>
+
+<script src="../../assets/scripts/main.js"></script>
+{% endblock %}

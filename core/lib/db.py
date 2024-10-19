@@ -48,7 +48,7 @@ def get_db():
         movement_id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id INTEGER,
         user_id INTEGER,
-        movement_type VARCHAR(4) CHECK (movement_type IN ('in', 'out', 'lost')) NOT NULL,
+        movement_type VARCHAR(3) CHECK (movement_type IN ('in', 'out')) NOT NULL,
         quantity_change INTEGER NOT NULL,
         reason TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

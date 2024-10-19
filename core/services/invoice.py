@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from .base_model import BaseModel
-from .lib import db
+from core.lib import db
 
 class Invoice(BaseModel):
     def __init__(self, transaction_id: int, invoice_number: str):

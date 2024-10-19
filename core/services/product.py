@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from .base_model import BaseModel
-from .lib import db
+from core.lib import db
 
 class Product(BaseModel):
     def __init__(self, name: str, sku: str, barcode: str, category_id: int, price: int, description: str = ""):

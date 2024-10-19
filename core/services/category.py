@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from .base_model import BaseModel
-from .lib import db
+from core.lib import db
 
 class Category(BaseModel):
     def __init__(self, name: str, description: str = ""):
