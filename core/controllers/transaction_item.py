@@ -82,9 +82,11 @@ def get_all_transaction_items_by_transaction_id(transaction_id: int):
             "transaction_item_id": ti[0],
             "transaction_id": ti[1],
             "product_id": ti[2],
-            "quantity": ti[3],
-            "price": str(ti[4]),
-            "discount": str(ti[5]),
-            "total": str(ti[6])
+            "product_name": ti[3],
+            "product_sku": ti[4],
+            "quantity": ti[5],
+            "price": str(ti[6]),
+            "discount": str(ti[7]),
+            "total": str(ti[8])
         } for ti in transaction_items_data
     ]
