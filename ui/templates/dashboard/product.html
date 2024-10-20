@@ -480,17 +480,7 @@
         result = await eel.search_products_by_name(searchTerm)();
         break;
       case "barcode":
-        const barcodeProduct = await eel.search_product_by_barcode(
-          searchTerm
-        )();
-
-        console.log(barcodeProduct);
-
-        if (barcodeProduct == "Product not found") {
-          errorAlert("No products found.");
-        } else {
-          result = barcodeProduct ? [barcodeProduct] : [];
-        }
+        result = await eel.search_product_by_barcode(searchTerm)();
         break;
       default:
         errorAlert("Invalid search type.");

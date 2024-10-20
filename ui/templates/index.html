@@ -11,7 +11,12 @@
         <div class="field">
           <label class="label">Username</label>
           <div class="control has-icons-left has-icons-right">
-            <input id="username" class="input" type="text" placeholder="Input your username" />
+            <input
+              id="username"
+              class="input"
+              type="text"
+              placeholder="Input your username"
+            />
             <span class="icon is-small is-left">
               <i class="fas fa-user"></i>
             </span>
@@ -20,7 +25,12 @@
         <div class="field">
           <label class="label">Password</label>
           <div class="control has-icons-left has-icons-right">
-            <input id="password" class="input" type="password" placeholder="Input your secret password" />
+            <input
+              id="password"
+              class="input"
+              type="password"
+              placeholder="Input your secret password"
+            />
             <span class="icon is-small is-left">
               <i class="fas fa-lock"></i>
             </span>
@@ -52,7 +62,7 @@
       } else if (sessionData.role === "admin") {
         window.location.href = "dashboard/index.html";
       } else if (sessionData.role === "superuser") {
-        window.location.href = "settings/admin.html";
+        window.location.href = "settings/users.html";
       } else {
         errorAlert("User role not recognized.");
       }

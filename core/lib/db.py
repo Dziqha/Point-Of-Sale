@@ -15,6 +15,13 @@ def get_db():
     );
     ''')
 
+    # Superuser Account
+    cursor.execute('''
+    INSERT INTO users (username, password, role)
+    SELECT ?, ?, ?
+    WHERE NOT EXISTS (SELECT 1 FROM users);
+    ''', ("superuser", "superuser", "superuser"))
+
     # Tabel products
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS products (

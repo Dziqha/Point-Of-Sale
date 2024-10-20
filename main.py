@@ -6,6 +6,8 @@ import core.controllers.promo
 import core.controllers.stock_movement
 import core.controllers.voucher
 import core.controllers.customer
+import core.controllers.transaction
+import core.controllers.transaction_item
 
 from core.lib.db import get_db
 

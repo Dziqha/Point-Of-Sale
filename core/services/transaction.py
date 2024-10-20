@@ -5,7 +5,7 @@ from .base_model import BaseModel
 from core.lib import db
 
 class Transaction(BaseModel):
-    def __init__(self, user_id: int, customer_id: int, total: Decimal, discount: Decimal, final_total: Decimal, paid_amount: Decimal, return_amount: Decimal, voucher_id: Optional[int] = None):
+    def __init__(self, user_id: int, customer_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, voucher_id: Optional[int] = None):
         self.transaction_id: Optional[int] = None
         self.user_id = user_id
         self.customer_id = customer_id
@@ -17,23 +17,29 @@ class Transaction(BaseModel):
         self.voucher_id = voucher_id
         self.created_at = datetime.now()
 
-    def create(self) -> str:
+    def create(self) -> dict:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
-            return "Database connection error."
+            return {"status": "error", "message": "Database connection error."}
 
-        cursor.execute('''INSERT INTO transactions (user_id, customer_id, total, discount, final_total, paid_amount, return_amount, voucher_id, created_at) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
-                       (self.user_id, self.customer_id, self.total, self.discount, self.final_total, self.paid_amount, self.return_amount, self.voucher_id, self.created_at))
-        conn.commit()
-        if cursor.rowcount > 0:
-            self.transaction_id = cursor.lastrowid
-            result = f"Transaction with ID {self.transaction_id} saved to database."
-        else:
-            result = "Failed to save transaction."
-        
-        conn.close()
-        return result
+        try:
+            cursor.execute('''INSERT INTO transactions (user_id, customer_id, total, discount, final_total, paid_amount, return_amount, voucher_id, created_at) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+                           (self.user_id, self.customer_id, self.total, self.discount, self.final_total, self.paid_amount, self.return_amount, self.voucher_id, self.created_at))
+            conn.commit()
+            if cursor.rowcount > 0:
+                self.transaction_id = cursor.lastrowid
+                return {
+                    "status": "success",
+                    "message": f"Transaction with ID {self.transaction_id} saved to database.",
+                    "transaction_id": self.transaction_id
+                }
+            else:
+                return {"status": "error", "message": "Failed to save transaction."}
+        except Exception as e:
+            return {"status": "error", "message": f"Error creating transaction: {str(e)}"}
+        finally:
+            conn.close()
 
     def delete(self) -> str:
         if self.transaction_id is None:
