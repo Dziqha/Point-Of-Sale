@@ -1,0 +1,68 @@
+{% extends "base.html" %} {% block content %}
+<div class="px-8 h-screen flex flex-col">
+  <!-- Navigation -->
+  <nav
+    class="flex justify-between items-center py-4 shadow h-16"
+    role="navigation"
+    aria-label="main navigation"
+  >
+    <div class="flex items-center">
+      <a class="flex items-center">
+        <img
+          src="../../assets/images/logo.png"
+          alt="Logo"
+          class="h-12 w-auto"
+        />
+      </a>
+    </div>
+    <div class="relative">
+      <div class="dropdown is-right">
+        <div class="dropdown-trigger">
+          <button aria-haspopup="true" aria-controls="profile-dropdown">
+            <span id="username"></span>
+            <span class="icon is-small">
+              <i class="fas fa-angle-down" aria-hidden="true"></i>
+            </span>
+          </button>
+        </div>
+        <div class="dropdown-menu" id="profile-dropdown" role="menu">
+          <div class="dropdown-content">
+            <div class="dropdown-item">
+              <button onclick="logout()">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- POS Content Container -->
+  <div class="flex-grow flex flex-col">
+    {% block pos_content %}
+    <!-- POS Page Content -->
+    {% endblock %}
+  </div>
+</div>
+
+<script>
+  function logout() {
+    set_cookie("jwt", "", -1);
+    window.location.href = "../index.html";
+  }
+
+  function set_cookie(name, value, hours) {
+    let date = new Date();
+    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    token = getCookie("jwt");
+    sessionData = await eel.get_current_session(token)();
+
+    const usernameElement = document.getElementById("username");
+    usernameElement.textContent = sessionData.username;
+  });
+</script>
+
+{% endblock %}

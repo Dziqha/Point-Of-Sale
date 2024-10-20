@@ -61,3 +61,21 @@ def get_all_promos():
             "product_name": p[7]
         } for p in promos_data
     ]
+
+@eel.expose
+def get_active_product_promo(product_id: int):
+    promo = Promo()
+    active_promo_data = promo.get_active_product_promo(product_id)
+
+    if active_promo_data is None:
+        return "No active promotion found for this product."
+    
+    return {
+        "promo_id": active_promo_data[0],
+        "product_id": active_promo_data[1],
+        "name": active_promo_data[2],
+        "description": active_promo_data[3],
+        "discount_percentage": str(active_promo_data[4]),
+        "start_date": active_promo_data[5],
+        "end_date": active_promo_data[6],
+    }

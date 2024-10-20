@@ -1,11 +1,10 @@
-from typing import Optional
 import eel
 from datetime import datetime
 from decimal import Decimal
 from core.services.transaction import Transaction
 
 @eel.expose
-def create_transaction(user_id: int, customer_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, voucher_id: Optional[int] = None):
+def create_transaction(user_id: int, customer_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, voucher_id: int = None):
     transaction = Transaction(
         user_id=user_id,
         customer_id=customer_id,
@@ -16,23 +15,13 @@ def create_transaction(user_id: int, customer_id: int, total: float, discount: f
         return_amount=Decimal(return_amount),
         voucher_id=voucher_id
     )
-    transaction_id = transaction.create()
-    return {
-        "transaction_id": transaction_id,
-        "user_id": user_id,
-        "customer_id": customer_id,
-        "total": total,
-        "discount": discount,
-        "final_total": final_total,
-        "paid_amount": paid_amount,
-        "return_amount": return_amount,
-        "voucher_id": voucher_id
-    }
+    result = transaction.create()
+    return result
 
 @eel.expose
-def update_transaction(transaction_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, voucher_id: Optional[int] = None):
+def update_transaction(transaction_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, voucher_id: int = None):
     transaction = Transaction(
-        user_id=0, 
+        user_id=0,
         customer_id=0,
         total=Decimal(total),
         discount=Decimal(discount),
@@ -42,16 +31,8 @@ def update_transaction(transaction_id: int, total: float, discount: float, final
         voucher_id=voucher_id
     )
     transaction.transaction_id = transaction_id
-    transaction.update()
-    return {
-        "transaction_id": transaction_id,
-        "total": total,
-        "discount": discount,
-        "final_total": final_total,
-        "paid_amount": paid_amount,
-        "return_amount": return_amount,
-        "voucher_id": voucher_id
-    }
+    result = transaction.update()
+    return result
 
 @eel.expose
 def delete_transaction(transaction_id: int):
@@ -62,12 +43,11 @@ def delete_transaction(transaction_id: int):
         discount=Decimal(0), 
         final_total=Decimal(0), 
         paid_amount=Decimal(0), 
-        return_amount=Decimal(0), 
-        voucher_id=None 
+        return_amount=Decimal(0)
     )
     transaction.transaction_id = transaction_id
-    transaction.delete()
-    return f"Transaction with ID {transaction_id} deleted."
+    result = transaction.delete()
+    return result
 
 @eel.expose
 def get_transaction_by_id(transaction_id: int):
@@ -78,21 +58,21 @@ def get_transaction_by_id(transaction_id: int):
         discount=Decimal(0), 
         final_total=Decimal(0), 
         paid_amount=Decimal(0), 
-        return_amount=Decimal(0), 
-        voucher_id=None 
+        return_amount=Decimal(0)
     )
     transaction_data = transaction.get_by_id(transaction_id)
     if transaction_data:
         return {
-            "transaction_id": transaction_data.transaction_id,
-            "user_id": transaction_data.user_id,
-            "customer_id": transaction_data.customer_id,
-            "total": str(transaction_data.total),
-            "discount": str(transaction_data.discount),
-            "final_total": str(transaction_data.final_total),
-            "paid_amount": str(transaction_data.paid_amount),
-            "return_amount": str(transaction_data.return_amount),
-            "voucher_id": transaction_data.voucher_id
+            "transaction_id": transaction_data[0],
+            "user_id": transaction_data[1],
+            "customer_id": transaction_data[2],
+            "total": str(transaction_data[3]),
+            "discount": str(transaction_data[4]),
+            "final_total": str(transaction_data[5]),
+            "paid_amount": str(transaction_data[6]),
+            "return_amount": str(transaction_data[7]),
+            "voucher_id": transaction_data[8],
+            "created_at": str(transaction_data[9])
         }
     return {"status": "failed", "message": "Transaction not found."}
 
@@ -105,21 +85,21 @@ def get_all_transactions():
         discount=Decimal(0), 
         final_total=Decimal(0), 
         paid_amount=Decimal(0), 
-        return_amount=Decimal(0), 
-        voucher_id=None 
+        return_amount=Decimal(0)
     )
     transactions_data = transaction.get_all()
     return [
         {
-            "transaction_id": t.transaction_id,
-            "user_id": t.user_id,
-            "customer_id": t.customer_id,
-            "total": str(t.total),
-            "discount": str(t.discount),
-            "final_total": str(t.final_total),
-            "paid_amount": str(t.paid_amount),
-            "return_amount": str(t.return_amount),
-            "voucher_id": t.voucher_id
+            "transaction_id": t[0],
+            "user_id": t[1],
+            "customer_id": t[2],
+            "total": str(t[3]),
+            "discount": str(t[4]),
+            "final_total": str(t[5]),
+            "paid_amount": str(t[6]),
+            "return_amount": str(t[7]),
+            "voucher_id": t[8],
+            "created_at": str(t[9])
         } for t in transactions_data
     ]
 
@@ -132,20 +112,20 @@ def get_transactions_by_user_id(user_id: int):
         discount=Decimal(0), 
         final_total=Decimal(0), 
         paid_amount=Decimal(0), 
-        return_amount=Decimal(0), 
-        voucher_id=None 
+        return_amount=Decimal(0)
     )
     transactions_data = transaction.get_by_user_id(user_id)
     return [
         {
-            "transaction_id": t.transaction_id,
-            "user_id": t.user_id,
-            "customer_id": t.customer_id,
-            "total": str(t.total),
-            "discount": str(t.discount),
-            "final_total": str(t.final_total),
-            "paid_amount": str(t.paid_amount),
-            "return_amount": str(t.return_amount),
-            "voucher_id": t.voucher_id
+            "transaction_id": t[0],
+            "user_id": t[1],
+            "customer_id": t[2],
+            "total": str(t[3]),
+            "discount": str(t[4]),
+            "final_total": str(t[5]),
+            "paid_amount": str(t[6]),
+            "return_amount": str(t[7]),
+            "voucher_id": t[8],
+            "created_at": str(t[9])
         } for t in transactions_data
     ]

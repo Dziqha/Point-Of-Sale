@@ -148,8 +148,8 @@ class Product(BaseModel):
             products.updated_at
         FROM products
         LEFT JOIN categories ON products.category_id = categories.category_id
-        WHERE products.barcode = ?
-        ''', (barcode,))
+        WHERE products.barcode LIKE ?
+        ''', (f'{barcode}%',))
         product = cursor.fetchall()
         conn.close()
         return product

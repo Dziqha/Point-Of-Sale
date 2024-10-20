@@ -101,3 +101,23 @@ class Promo(BaseModel):
         conn.close()
         
         return promos
+
+    def get_active_product_promo(self, product_id: int) -> Optional[Tuple[Any]]:
+        conn, cursor = db.init_db()
+
+        now = datetime.now()
+        cursor.execute('''
+            SELECT promo.promo_id, promo.product_id, promo.name, promo.description, 
+                   promo.discount_percentage, promo.start_date, promo.end_date, 
+                   p.name AS product_name 
+            FROM promos promo
+            JOIN products p ON promo.product_id = p.product_id 
+            WHERE promo.product_id = ? 
+              AND promo.start_date < ? 
+              AND promo.end_date > ?
+        ''', (product_id, now, now))
+
+        active_promo = cursor.fetchone()
+        conn.close()
+        
+        return active_promo

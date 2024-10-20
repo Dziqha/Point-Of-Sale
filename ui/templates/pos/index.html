@@ -1,19 +1,356 @@
-{% extends "base.html" %} {% block content %}
-<h1>Pos</h1>
-<button onclick="logout()">Logout</button>
+{% extends "/pos/base.html" %} {% block pos_content %}
+<!-- Search Bar -->
+<div class="w-full mb-4 flex items-center gap-2 relative">
+  <div class="select">
+    <select id="search-type">
+      <option value="name">By name</option>
+      <option value="barcode">By barcode</option>
+    </select>
+  </div>
+  <input
+    class="input"
+    type="text"
+    id="search-input"
+    placeholder="Search products"
+    oninput="handleSearchInput()"
+  />
+  <div
+    id="search-results"
+    class="absolute top-full left-0 w-full bg-gray-800 border border-gray-700 rounded-b shadow-md z-10 hidden"
+  ></div>
+</div>
 
-<script type="text/javascript">
-  function logout() {
-    set_cookie("jwt", "", -1);
+<!-- Cart Table -->
+<div class="flex-grow">
+  <table class="table" id="cart-table">
+    <thead>
+      <tr>
+        <th>Barcode</th>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Discount</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="cart-body"></tbody>
+  </table>
+</div>
 
-    window.location.href = "../index.html";
+<!-- Total Section -->
+<div class="h-28">
+  <div class="flex">
+    <div class="w-3/6 shadow"></div>
+    <div class="w-2/6 shadow">
+      <div class="text-right mr-8">
+        <div class="flex justify-between">
+          <span>Subtotal:</span>
+          <span id="subtotal">Rp. 0.00</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Tax (10%):</span>
+          <span id="tax">Rp. 0.00</span>
+        </div>
+        <div class="flex justify-between font-bold text-xl">
+          <span>Total:</span>
+          <span id="total">Rp. 0.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="w-1/6 shadow">
+      <button
+        class="button is-primary w-full mb-2 js-modal-trigger"
+        data-target="checkout-modal"
+      >
+        Check out
+      </button>
+      <button class="button w-full" onclick="voidOrder()">Void order</button>
+    </div>
+  </div>
+</div>
+
+<!-- Check out Modal -->
+<div id="checkout-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Check Out</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <h1 class="text-xl text-white">Total:</h1>
+      <h1 class="text-2xl font-bold text-white">Rp. 1.000.000</h1>
+
+      <div class="field mt-4">
+        <label class="label">Paid</label>
+        <div class="control">
+          <input
+            class="input"
+            type="number"
+            id="paid"
+            placeholder="Paid amount"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Voucher</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="voucher"
+            placeholder="Voucher Code"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Customer</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="customer"
+            placeholder="Customer ID Number"
+            required
+          />
+        </div>
+      </div>
+      <button class="button is-small">
+        <i class="fas fa-plus mr-2"></i> Add Customer
+      </button>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <button class="button is-success">Check Out</button>
+        <button class="button">Cancel</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script>
+  let cart = [];
+  let debounceTimer;
+  let singleResult = null; // To track if there is only one result
+
+  function handleSearchInput() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      searchProducts();
+    }, 300);
   }
 
-  function set_cookie(name, value, hours) {
-    let date = new Date();
-    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  async function searchProducts() {
+    const searchTerm = document.getElementById("search-input").value;
+    const searchType = document.getElementById("search-type").value;
+    const resultsContainer = document.getElementById("search-results");
+
+    if (searchTerm.length < 2) {
+      resultsContainer.innerHTML = "";
+      resultsContainer.classList.add("hidden");
+      return;
+    }
+
+    let result;
+
+    if (searchType === "name") {
+      result = await eel.search_products_by_name(searchTerm)();
+    } else if (searchType === "barcode") {
+      result = await eel.search_product_by_barcode(searchTerm)();
+    }
+
+    if (Array.isArray(result) && result.length > 0) {
+      displaySearchResults(result);
+      if (result.length === 1) {
+        singleResult = result[0]; // Track the single result
+      } else {
+        singleResult = null; // Reset if more than one result
+      }
+    } else {
+      hideSearchResults();
+    }
   }
+
+  function displaySearchResults(products) {
+    const resultsContainer = document.getElementById("search-results");
+    resultsContainer.innerHTML = "";
+    resultsContainer.classList.remove("hidden");
+
+    products.forEach((product) => {
+      const productElement = document.createElement("div");
+      productElement.className =
+        "p-2 hover:bg-gray-700 cursor-pointer text-white";
+
+      productElement.innerHTML = `<p>${product.name}${
+        product.sku ? ` (${product.sku})` : ""
+      } - ${product.barcode}</p>`;
+
+      productElement.onclick = () => selectProduct(product);
+      resultsContainer.appendChild(productElement);
+    });
+  }
+
+  function selectProduct(product) {
+    addToCart(product);
+    hideSearchResults();
+    document.getElementById("search-input").value = "";
+  }
+
+  function hideSearchResults() {
+    const searchResults = document.getElementById("search-results");
+    searchResults.classList.add("hidden");
+  }
+
+  async function addToCart(product) {
+    // Get product details by ID
+    const productDetails = await eel.get_product_by_id(product.product_id)();
+
+    // Check if the product exists
+    if (
+      typeof productDetails === "string" &&
+      productDetails === "Product not found"
+    ) {
+      alert(productDetails);
+      return;
+    }
+
+    const stock = productDetails.stock;
+    const activePromo = await eel.get_active_product_promo(
+      product.product_id
+    )();
+    let discount = 0;
+
+    if (activePromo) {
+      discount = activePromo.discount_percentage;
+    }
+
+    const existingItem = cart.find(
+      (item) => item.product_id === product.product_id
+    );
+
+    if (existingItem) {
+      if (existingItem.quantity + 1 <= stock) {
+        existingItem.quantity += 1;
+        existingItem.discount = discount;
+      } else {
+        errorAlert(
+          `Cannot add more than available stock (${stock}) for ${product.name}.`
+        );
+      }
+    } else {
+      if (1 <= stock) {
+        cart.push({
+          ...productDetails,
+          quantity: 1,
+          discount: discount,
+        });
+      } else {
+        errorAlert(`Cannot add ${product.name}. Not enough stock available.`);
+      }
+    }
+
+    updateCartTable();
+    updateTotals();
+  }
+
+  function updateCartTable() {
+    const cartBody = document.getElementById("cart-body");
+    cartBody.innerHTML = "";
+
+    cart.forEach((item, index) => {
+      const row = cartBody.insertRow();
+      row.innerHTML = `
+      <td>${item.barcode}</td>
+      <td>${item.name}</td>
+      <td>${item.sku ? item.sku : "-"}</td>
+      <td>${item.price}</td>
+      <td><input class="input is-small w-16" type="number" value="${
+        item.quantity
+      }" min="1" onchange="updateQuantity(${index}, this.value)"></td>
+      <td>${item.discount}</td>
+      <td>${(item.price * item.quantity - item.discount).toFixed(2)}</td>
+      <td><button class="button is-danger is-small" onclick="removeFromCart(${index})">Remove</button></td>
+    `;
+    });
+  }
+
+  async function updateQuantity(index, newQuantity) {
+    const productDetails = await eel.get_product_by_id(
+      cart[index].product_id
+    )();
+
+    if (
+      typeof productDetails === "string" &&
+      productDetails === "Product not found"
+    ) {
+      errorAlert(productDetails);
+      return;
+    }
+
+    const stock = productDetails.stock;
+
+    if (newQuantity <= stock && newQuantity > 0) {
+      cart[index].quantity = parseInt(newQuantity);
+    } else {
+      errorAlert(
+        `Cannot set quantity to ${newQuantity}. Only ${stock} available for ${cart[index].name}.`
+      );
+    }
+
+    updateCartTable();
+    updateTotals();
+  }
+
+  function updateDiscount(index, newDiscount) {
+    cart[index].discount = parseFloat(newDiscount);
+    updateCartTable();
+    updateTotals();
+  }
+
+  function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartTable();
+    updateTotals();
+  }
+
+  function updateTotals() {
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity - item.discount,
+      0
+    );
+    const tax = subtotal * 0.1;
+    const total = subtotal + tax;
+
+    document.getElementById("subtotal").textContent = `Rp. ${subtotal.toFixed(
+      2
+    )}`;
+    document.getElementById("tax").textContent = `Rp. ${tax.toFixed(2)}`;
+    document.getElementById("total").textContent = `Rp. ${total.toFixed(2)}`;
+  }
+
+  function processPayment() {
+    alert("Payment processing not implemented yet.");
+  }
+
+  function voidOrder() {
+    cart = [];
+    updateCartTable();
+    updateTotals();
+  }
+
+  // Add an event listener for the Enter key
+  document.getElementById("search-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && singleResult) {
+      selectProduct(singleResult);
+      singleResult = null; // Reset after selection
+    }
+  });
+
+  // Initialize the page
+  updateCartTable();
+  updateTotals();
 </script>
-
 {% endblock %}

@@ -10,7 +10,7 @@ def get_db():
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
         username VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(7) CHECK (role IN ('cashier', 'admin')) NOT NULL,
+        role VARCHAR(9) CHECK (role IN ('cashier', 'admin', 'superuser')) NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     ''')

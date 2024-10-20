@@ -11,12 +11,22 @@
     </a>
   </div>
   <div class="relative">
-    <button class="flex items-center focus:outline-none">
-      <span id="username" class="mr-2"></span>
-      <i class="fa-solid fa-chevron-down"></i>
-    </button>
-    <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg hidden">
-      <button class="block px-4 py-2 text-sm" onclick="logout()">Logout</button>
+    <div class="dropdown is-right">
+      <div class="dropdown-trigger">
+        <button aria-haspopup="true" aria-controls="profile-dropdown">
+          <span id="username"></span>
+          <span class="icon is-small">
+            <i class="fas fa-angle-down" aria-hidden="true"></i>
+          </span>
+        </button>
+      </div>
+      <div class="dropdown-menu" id="profile-dropdown" role="menu">
+        <div class="dropdown-content">
+          <div class="dropdown-item">
+            <button onclick="logout()">Logout</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
@@ -76,13 +86,6 @@
 </div>
 
 <script>
-  const dropdownButton = document.querySelector("nav button");
-  const dropdownMenu = document.querySelector("nav .absolute");
-
-  dropdownButton.addEventListener("click", () => {
-    dropdownMenu.classList.toggle("hidden");
-  });
-
   function logout() {
     set_cookie("jwt", "", -1);
     window.location.href = "../index.html";

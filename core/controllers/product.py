@@ -36,7 +36,7 @@ def get_product_by_id(product_id: int):
     p = product.get_by_id(product_id)
 
     if p is None:
-        return {"Product not found"}
+        return "Product not found"
 
     return {
         "product_id": p[0],
@@ -94,21 +94,20 @@ def search_products_by_name(name: str):
 @eel.expose
 def search_product_by_barcode(barcode: str):
     product = Product('', '', '', 0, 0)
-    p = product.search_by_barcode(barcode)
+    products_data = product.search_by_barcode(barcode)
 
-    if p is None or len(p) == 0:
-        return {"Product not found"}
-
-    return {
-        "product_id": p[0][0],
-        "name": p[0][1],
-        "sku": p[0][2],
-        "barcode": p[0][3],
-        "stock": p[0][4],
-        "price": p[0][5],
-        "description": p[0][6],
-        "category_id": p[0][7],
-        "category_name": p[0][8],
-        "created_at": p[0][9],
-        "updated_at": p[0][10]
-    }
+    return [
+        {
+            "product_id": p[0],
+            "name": p[1],
+            "sku": p[2],
+            "barcode": p[3],
+            "stock": p[4],
+            "price": p[5],
+            "description": p[6],
+            "category_id": p[7],
+            "category_name": p[8],
+            "created_at": p[9],
+            "updated_at": p[10]
+        } for p in products_data
+    ]
