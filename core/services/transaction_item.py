@@ -18,18 +18,35 @@ class TransactionItem(BaseModel):
         if conn is None or cursor is None:
             return "Database connection error."
 
-        cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, quantity, price, discount, total) 
-                          VALUES (?, ?, ?, ?, ?, ?)''', 
-                       (self.transaction_id, self.product_id, self.quantity, self.price, self.discount, self.total))
-        conn.commit()
-        if cursor.rowcount > 0:
-            self.transaction_item_id = cursor.lastrowid
-            result = f"Transaction item with ID {self.transaction_item_id} saved to database."
-        else:
-            result = "Failed to save transaction item."
+        try:
+            conn.execute("BEGIN")
+            
+            cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, quantity, price, discount, total) 
+                            VALUES (?, ?, ?, ?, ?, ?)''', 
+                        (self.transaction_id, self.product_id, self.quantity, self.price, self.discount, self.total))
 
-        conn.close()
+            cursor.execute('''UPDATE products 
+                            SET stock = stock - ? 
+                            WHERE product_id = ? AND stock >= ?''', 
+                        (self.quantity, self.product_id, self.quantity))
+
+            if cursor.rowcount == 0:
+                conn.rollback()
+                return "Failed to update stock. Insufficient stock or product does not exist."
+
+            conn.commit()
+            self.transaction_item_id = cursor.lastrowid
+            result = f"Transaction item with ID {self.transaction_item_id} saved to database and stock updated."
+        
+        except Exception as e:
+            conn.rollback()
+            result = f"Failed to save transaction item: {str(e)}"
+        
+        finally:
+            conn.close()
+
         return result
+
 
     def delete(self) -> str:
         if self.transaction_item_id is None:

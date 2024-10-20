@@ -39,6 +39,15 @@ def get_user_by_id(user_id: int):
         }
 
     return None 
+@eel.expose
+def get_user_by_role(role: str):
+    user = User('', '', '')
+    user_data = user.get_by_role(role)
+
+    if user_data:
+        
+        return [{"id": u[0], "username": u[1]} for u in user_data]
+    return [] 
 
 @eel.expose
 def update_user(user_id: int, password: str):
