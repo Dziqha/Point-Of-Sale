@@ -3,29 +3,14 @@ from core.services.customer import Customer
 
 @eel.expose
 def create_customer(name: str, email: str = "", phone: str = "", address: str = ""):
-    """Create a new customer and save it to the database."""
     customer = Customer(name=name, email=email, phone=phone, address=address)
-    customer_id = customer.create() 
-    return {
-        "customer_id": customer_id,
-        "name": name,
-        "email": email,
-        "phone": phone,
-        "address": address
-    }
+    return customer.create() 
 
 @eel.expose
 def update_customer(customer_id: int, name: str, email: str = "", phone: str = "", address: str = ""):
     customer = Customer(name=name, email=email, phone=phone, address=address)
     customer.customer_id = customer_id
-    customer.update()
-    return {
-        "customer_id": customer_id,
-        "name": name,
-        "email": email,
-        "phone": phone,
-        "address": address
-    }
+    return customer.update()
 
 @eel.expose
 def delete_customer(customer_id: int):
@@ -40,11 +25,11 @@ def get_customer_by_id(customer_id: int):
     customer_data = customer.get_by_id(customer_id)
     if customer_data:
         return {
-            "customer_id": customer_data.customer_id,
-            "name": customer_data.name,
-            "email": customer_data.email,
-            "phone": customer_data.phone,
-            "address": customer_data.address
+            "customer_id": customer_data[0],
+            "name": customer_data[1],
+            "email": customer_data[2],
+            "phone": customer_data[3],
+            "address": customer_data[4]
         }
     return {"status": "failed", "message": "Customer not found."}
 
@@ -54,10 +39,10 @@ def get_all_customers():
     customers_data = customer.get_all()
     return [
         {
-            "customer_id": c.customer_id,
-            "name": c.name,
-            "email": c.email,
-            "phone": c.phone,
-            "address": c.address
+            "customer_id": c[0],
+            "name": c[1],
+            "email": c[2],
+            "phone": c[3],
+            "address": c[4]
         } for c in customers_data
     ]
