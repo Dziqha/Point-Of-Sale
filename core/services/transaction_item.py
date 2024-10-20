@@ -90,16 +90,33 @@ class TransactionItem(BaseModel):
         return transaction_item
 
     def get_all_by_transaction_id(self, transaction_id: int) -> List[Tuple[Any]]:
-        conn, cursor = db.init_db()
-        if conn is None or cursor is None:
-            print("Database connection error.")
-            return []
+            conn, cursor = db.init_db()
+            if conn is None or cursor is None:
+                print("Database connection error.")
+                return []
 
-        cursor.execute('''SELECT * FROM transaction_items WHERE transaction_id = ?''', (transaction_id,))
-        transaction_items = cursor.fetchall()
-        conn.close()
+            cursor.execute('''
+                SELECT 
+                    ti.transaction_item_id,
+                    ti.transaction_id,
+                    ti.product_id,
+                    p.name AS product_name,
+                    p.sku AS product_sku,
+                    ti.quantity,
+                    ti.price,
+                    ti.discount,
+                    ti.total
+                FROM 
+                    transaction_items ti
+                JOIN 
+                    products p ON ti.product_id = p.product_id
+                WHERE 
+                    ti.transaction_id = ?
+            ''', (transaction_id,))
+            transaction_items = cursor.fetchall()
+            conn.close()
 
-        return transaction_items
+            return transaction_items
 
     def update(self) -> str:
         if self.transaction_item_id is None:

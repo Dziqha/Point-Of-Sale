@@ -681,16 +681,13 @@
 
   async function printInvoice(transactionId) {
     try {
-      // Dapatkan data transaksi
       const transaction = await eel.get_transaction_by_id(transactionId)();
 
-      // Dapatkan item transaksi
       const transactionItems =
         await eel.get_all_transaction_items_by_transaction_id(transactionId)();
 
-      // Buat string faktur
       let invoiceText = "=== FAKTUR ===\n\n";
-      invoiceText += `ID Transaksi: ${transactionId}\n`;
+      invoiceText += `ID: ${transactionId}\n`;
       invoiceText += `Tanggal: ${new Date(
         transaction.created_at
       ).toLocaleString()}\n\n`;
@@ -698,9 +695,12 @@
       invoiceText += "--------------------\n";
 
       for (const item of transactionItems) {
-        invoiceText += `${item.quantity}x ${
-          item.product_name
-        } @ ${inputToRupiah(item.price)}\n`;
+        const productDisplay = item.product_sku
+          ? `${item.product_name} (${item.product_sku})`
+          : item.product_name;
+        invoiceText += `${item.quantity}x ${productDisplay} @ ${inputToRupiah(
+          item.price
+        )}\n`;
         invoiceText += `   Subtotal: ${inputToRupiah(item.total)}\n`;
       }
 
@@ -714,7 +714,6 @@
       )}\n\n`;
       invoiceText += "Terima kasih atas pembelian Anda!";
 
-      // Buka jendela baru untuk mencetak
       const printWindow = window.open("", "_blank");
       printWindow.document.write("<pre>" + invoiceText + "</pre>");
       printWindow.document.close();
@@ -724,13 +723,11 @@
       errorAlert("Gagal mencetak faktur. Silakan coba lagi.");
     }
   }
-
   async function getVoucherId(voucherCode) {
     const voucher = await eel.get_voucher_by_code(voucherCode)();
     return voucher.voucher_id || null;
   }
 
-  // Tambahkan event listener untuk tombol checkout
   document
     .getElementById("checkout-btn")
     .addEventListener("click", processCheckout);
