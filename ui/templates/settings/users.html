@@ -13,6 +13,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>No</th>  <!-- Kolom untuk nomor urut -->
             <th><abbr title="Position">ID</abbr></th>
             <th>Username</th>
             <th>Role</th>
@@ -125,36 +126,32 @@
 </div>
 
 <script type="text/javascript">
-       let userToDelete = null;
-    let displayUserIdCounter = 1;
+    let userToDelete = null;
+    let displayUserIdCounter = 1; // Counter untuk nomor urut pengguna
 
     async function getUsers() {
-        // Fetch all users using the eel function
         const users = await eel.get_all_users()();
-        
-        // Modify the users array to include displayId for easier management in the table
         const modifiedUsers = users.map(user => ({
-            displayId: displayUserIdCounter++,  // Increment display ID counter
-            actualId: user.id,  // Keep the actual user ID for operations
+            displayId: displayUserIdCounter++, // Nomor urut yang ditampilkan
+            actualId: user.id, // ID asli dari database
             username: user.username,
-            role: user.role  // Include the role field
+            role: user.role
         }));
-
-        displayUsers(modifiedUsers);  // Call the function to display users in the table
+        displayUsers(modifiedUsers);
     }
 
     function displayUsers(users) {
         const tableBody = document.getElementById("user-table-body");
-        tableBody.innerHTML = "";  // Clear the table before adding new rows
+        tableBody.innerHTML = "";
 
         if (Array.isArray(users)) {
             users.forEach((user) => {
-                // Create a new row for each user
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <th>${user.displayId}</th>  <!-- Display user ID -->
-                    <td>${user.username}</td>  <!-- Display username -->
-                    <td>${user.role}</td>  <!-- Display role -->
+                    <th>${user.displayId}</th>  <!-- Nomor urut pengguna -->
+                    <td>${user.actualId}</td>   <!-- ID asli dari database -->
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
                     <td>
                         <button class="button is-link is-small" onclick="editUser(${user.actualId})">
                             <i class="fas fa-edit"></i>
@@ -164,7 +161,7 @@
                         </button>
                     </td>
                 `;
-                tableBody.appendChild(row);  // Append the row to the table body
+                tableBody.appendChild(row);  // Tambahkan baris ke tabel
             });
         } else {
             console.error("Expected users to be an array but got:", users);
@@ -176,32 +173,26 @@
         const password = document.getElementById("add-user-password").value;
         const role = document.getElementById("add-user-role").value;
 
-        // Basic validation for username and password
         if (!username || !password) {
             errorAlert("Please enter both username and password.");
             return;
         }
 
-        // Call the eel function to create a new user
         const result = await eel.create_user(username, password, role)();
-        successAlert(result);  // Show success alert
+        successAlert(result);
 
-        // Clear the input fields after submission
         document.getElementById("add-user-username").value = "";
         document.getElementById("add-user-password").value = "";
 
-        displayUserIdCounter = 1;  // Reset the counter to refresh IDs properly
-        getUsers();  // Refresh the user list
+        displayUserIdCounter = 1;
+        getUsers();  // Refresh daftar pengguna
     }
 
     function editUser(actualId) {
         const modal = document.getElementById("edit-user-modal");
-        modal.classList.add("is-active");  // Show the edit modal
+        modal.classList.add("is-active");  // Tampilkan modal edit
 
-        // Prepopulate the hidden input field with the user's actual ID
         document.getElementById("edit-user-id").value = actualId;
-
-        // Clear any previous password values
         document.getElementById("edit-user-password").value = ""; 
         document.getElementById("edit-user-confirm-password").value = ""; 
     }
@@ -211,7 +202,6 @@
         const newPassword = document.getElementById("edit-user-password").value;
         const confirmPassword = document.getElementById("edit-user-confirm-password").value;
 
-        // Validate that both password fields are filled and match
         if (!newPassword) {
             errorAlert("Please enter a new password.");
             return;
@@ -221,32 +211,31 @@
             return;
         }
 
-        // Call the eel function to update the user's password
         const result = await eel.update_user(actualId, newPassword)();
         successAlert("User updated successfully!");
 
         const modal = document.getElementById("edit-user-modal");
-        modal.classList.remove("is-active");  // Close the edit modal
+        modal.classList.remove("is-active");
 
-        displayUserIdCounter = 1;  // Reset the counter to refresh IDs properly
-        getUsers();  // Refresh the user list
+        displayUserIdCounter = 1;
+        getUsers();
     }
 
     function deleteUser(actualId) {
-        userToDelete = actualId;  // Set the user ID to be deleted
+        userToDelete = actualId;
         const modal = document.getElementById("delete-user-modal");
-        modal.classList.add("is-active");  // Show the delete confirmation modal
+        modal.classList.add("is-active");
     }
 
     async function confirmDeleteUser() {
         if (userToDelete) {
-            const result = await eel.delete_user(userToDelete)();  // Call the eel function to delete the user
-            successAlert(result);  // Show success alert
-            userToDelete = null;  // Reset the userToDelete variable
+            const result = await eel.delete_user(userToDelete)();
+            successAlert(result);
+            userToDelete = null;
             const modal = document.getElementById("delete-user-modal");
-            modal.classList.remove("is-active");  // Close the delete modal
-            displayUserIdCounter = 1;  // Reset the counter to refresh IDs properly
-            getUsers();  // Refresh the user list
+            modal.classList.remove("is-active");
+            displayUserIdCounter = 1;
+            getUsers();
         }
     }
 

@@ -1,6 +1,6 @@
 {% extends "/dashboard/base.html" %}
 {% block dashboard_content %}
-<h1 class="text-2xl">Users</h1>
+<h1 class="text-2xl">Admin</h1>
 
 <!-- Add User Button -->
 <div class="mt-8 mb-4">
@@ -13,6 +13,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>No</th> <!-- Kolom baru untuk nomor urut -->
             <th><abbr title="Position">ID</abbr></th>
             <th>Username</th>
             <th>Action</th>
@@ -75,8 +76,7 @@
             <div class="field">
                 <label class="label">Confirm New Password</label>
                 <div class="control">
-                    <input class="input" type="password" id="edit-user-confirm-password"
-                        placeholder="Confirm New Password" />
+                    <input class="input" type="password" id="edit-user-confirm-password" placeholder="Confirm New Password" />
                 </div>
             </div>
         </section>
@@ -119,15 +119,13 @@
 </div>
 
 <script type="text/javascript">
-     let userToDelete = null;
-    let userIdCounter = 1; 
-    let displayUserIdCounter = 1;
+    let userToDelete = null;
+    let displayUserIdCounter = 1; // Ubah nama variabel ini
 
     async function getUsers() {
         const role = "cashier";
         const users = await eel.get_user_by_role(role)();
         const modifiedUsers = users.map(user => ({
-            displayId: displayUserIdCounter++, 
             actualId: user.id, 
             username: user.username
         }));
@@ -140,16 +138,17 @@
         tableBody.innerHTML = "";
 
         if (Array.isArray(users)) {
-            users.forEach((user) => {
+            users.forEach((user, index) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <th>${user.displayId}</th>  <!-- ID tampilan -->
+                    <td>${index + 1}</td>  <!-- Menampilkan nomor urut -->
+                    <th>${user.actualId}</th>  <!-- ID asli dari database -->
                     <td>${user.username}</td>
                     <td>
-                        <button class="button is-link is-small" onclick="editUser(${user.actualId})"> <!-- ID yang sebenarnya untuk mengedit -->
+                        <button class="button is-link is-small" onclick="editUser(${user.actualId})">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="button is-danger is-small text-white" onclick="deleteUser(${user.actualId})"> <!-- ID yang sebenarnya untuk penghapusan -->
+                        <button class="button is-danger is-small text-white" onclick="deleteUser(${user.actualId})">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
