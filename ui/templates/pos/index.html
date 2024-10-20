@@ -430,6 +430,7 @@
     cart = [];
     updateCartTable();
     updateTotals();
+    updateCheckoutButton();
   }
 
   async function addCustomer() {
@@ -572,5 +573,166 @@
     updateTotals();
     updateCheckoutButton();
   });
+
+  async function processCheckout() {
+    const totalAmount = parseFloat(
+      document
+        .getElementById("modal-total-amount")
+        .textContent.replace("Rp. ", "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+    );
+    const paidAmount = parseFloat(
+      document
+        .getElementById("paid-amount")
+        .value.replace("Rp. ", "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+    );
+    const returnAmount = paidAmount - totalAmount;
+    const voucherCode = document.getElementById("voucher-code").value.trim();
+    const customerId = document.getElementById("customer-id").value.trim()
+      ? parseInt(document.getElementById("customer-id").value.trim())
+      : null;
+    const userId = 1; // Ganti dengan ID pengguna yang sesuai
+
+    let voucherId = null;
+    if (voucherCode) {
+      const voucher = await eel.get_voucher_by_code(voucherCode)();
+      if (voucher && voucher.voucher_id) {
+        voucherId = voucher.voucher_id;
+      }
+    }
+
+    try {
+      // Buat transaksi baru
+      const transactionResult = await eel.create_transaction(
+        userId,
+        totalAmount,
+        0, // discount
+        totalAmount,
+        paidAmount,
+        returnAmount,
+        customerId,
+        voucherId
+      )();
+
+      if (transactionResult.status === "success") {
+        const transactionId = transactionResult.transaction_id;
+
+        // Buat item transaksi untuk setiap produk
+        for (const item of cart) {
+          const itemResult = await eel.create_transaction_item(
+            transactionId,
+            item.product_id,
+            item.quantity,
+            item.price,
+            item.discount,
+            item.price * item.quantity - item.discount
+          )();
+
+          if (itemResult.status !== "success") {
+            throw new Error(`Gagal menambahkan item: ${item.name}`);
+          }
+        }
+
+        // Tampilkan modal sukses
+        showSuccessModal(transactionId);
+      } else {
+        throw new Error("Gagal membuat transaksi");
+      }
+    } catch (error) {
+      errorAlert(`Error: ${error.message}`);
+      console.error(error);
+    }
+  }
+
+  function showSuccessModal(transactionId) {
+    const modal = document.createElement("div");
+    modal.className = "modal is-active";
+    modal.innerHTML = `
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Transaksi Berhasil</p>
+          <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+          <p>Transaksi berhasil diselesaikan.</p>
+          <p>ID Transaksi: ${transactionId}</p>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" onclick="printInvoice(${transactionId})">Cetak Faktur</button>
+          <button class="button" onclick="closeSuccessModal()">Tutup</button>
+        </footer>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  function closeSuccessModal() {
+    const modal = document.querySelector(".modal.is-active");
+    if (modal) {
+      modal.remove();
+    }
+    // Reset keranjang dan tampilan
+    voidOrder();
+  }
+
+  async function printInvoice(transactionId) {
+    try {
+      // Dapatkan data transaksi
+      const transaction = await eel.get_transaction_by_id(transactionId)();
+
+      // Dapatkan item transaksi
+      const transactionItems =
+        await eel.get_all_transaction_items_by_transaction_id(transactionId)();
+
+      // Buat string faktur
+      let invoiceText = "=== FAKTUR ===\n\n";
+      invoiceText += `ID Transaksi: ${transactionId}\n`;
+      invoiceText += `Tanggal: ${new Date(
+        transaction.created_at
+      ).toLocaleString()}\n\n`;
+      invoiceText += "Daftar Item:\n";
+      invoiceText += "--------------------\n";
+
+      for (const item of transactionItems) {
+        invoiceText += `${item.quantity}x ${
+          item.product_name
+        } @ ${inputToRupiah(item.price)}\n`;
+        invoiceText += `   Subtotal: ${inputToRupiah(item.total)}\n`;
+      }
+
+      invoiceText += "--------------------\n";
+      invoiceText += `Subtotal: ${inputToRupiah(transaction.total)}\n`;
+      invoiceText += `Diskon: ${inputToRupiah(transaction.discount)}\n`;
+      invoiceText += `Total: ${inputToRupiah(transaction.final_total)}\n`;
+      invoiceText += `Dibayar: ${inputToRupiah(transaction.paid_amount)}\n`;
+      invoiceText += `Kembalian: ${inputToRupiah(
+        transaction.return_amount
+      )}\n\n`;
+      invoiceText += "Terima kasih atas pembelian Anda!";
+
+      // Buka jendela baru untuk mencetak
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write("<pre>" + invoiceText + "</pre>");
+      printWindow.document.close();
+      printWindow.print();
+    } catch (error) {
+      console.error("Error mencetak faktur:", error);
+      errorAlert("Gagal mencetak faktur. Silakan coba lagi.");
+    }
+  }
+
+  async function getVoucherId(voucherCode) {
+    const voucher = await eel.get_voucher_by_code(voucherCode)();
+    return voucher.voucher_id || null;
+  }
+
+  // Tambahkan event listener untuk tombol checkout
+  document
+    .getElementById("checkout-btn")
+    .addEventListener("click", processCheckout);
 </script>
 {% endblock %}

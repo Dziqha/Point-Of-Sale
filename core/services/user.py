@@ -29,7 +29,9 @@ class User(BaseModel):
 
     def get_all(self):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM users''')
+        cursor.execute('''
+            SELECT * FROM users WHERE role != 'superuser'
+        ''')
         users = cursor.fetchall()
         conn.close()
         return users
@@ -63,7 +65,10 @@ class User(BaseModel):
             raise ValueError("User ID is required to delete a user.")
 
         conn, cursor = db.init_db()
-        cursor.execute('''DELETE FROM users WHERE user_id = ?''', (self.user_id,))
+        cursor.execute('''
+        DELETE FROM users 
+        WHERE user_id = ? AND role != 'superuser'
+        ''', (self.user_id,))
         conn.commit()
         affected_rows = cursor.rowcount
         conn.close()

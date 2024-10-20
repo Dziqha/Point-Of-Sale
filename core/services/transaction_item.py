@@ -13,23 +13,54 @@ class TransactionItem(BaseModel):
         self.discount = discount
         self.total = total
 
-    def create(self) -> str:
+    def create(self) -> dict:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
-            return "Database connection error."
+            return {"status": "error", "message": "Database connection error."}
 
-        cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, quantity, price, discount, total) 
-                          VALUES (?, ?, ?, ?, ?, ?)''', 
-                       (self.transaction_id, self.product_id, self.quantity, self.price, self.discount, self.total))
-        conn.commit()
-        if cursor.rowcount > 0:
-            self.transaction_item_id = cursor.lastrowid
-            result = f"Transaction item with ID {self.transaction_item_id} saved to database."
-        else:
-            result = "Failed to save transaction item."
+        try:
+            conn.execute('BEGIN;')
 
-        conn.close()
-        return result
+            cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, price, discount, quantity, total)
+                            SELECT 
+                                ?,
+                                p.product_id,
+                                p.price,
+                                IFNULL(pr.discount_percentage, 0),
+                                ?,
+                                (p.price - IFNULL(pr.discount_percentage, 0)) * ?
+                            FROM 
+                                products p
+                            LEFT JOIN 
+                                (SELECT product_id, discount_percentage 
+                                FROM promos
+                                WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE
+                                ) pr 
+                            ON 
+                                p.product_id = pr.product_id
+                            WHERE 
+                                p.product_id = ?;
+            ''', (self.transaction_id, self.quantity, self.quantity, self.product_id))
+
+            # Update stock for the product
+            cursor.execute('''UPDATE products
+                            SET stock = stock - ?
+                            WHERE product_id = ? AND stock >= ?;
+            ''', (self.quantity, self.product_id, self.quantity))
+
+            conn.commit()
+
+            if cursor.rowcount > 0:
+                return {"status": "success", "message": "Transaction item saved to database and stock updated."}
+            else:
+                return {"status": "error", "message": "Failed to save transaction item or product not found."}
+
+        except Exception as e:
+            conn.rollback()
+            return {"status": "error", "message": f"An error occurred: {str(e)}"}
+        
+        finally:
+            conn.close()
 
     def delete(self) -> str:
         if self.transaction_item_id is None:
@@ -87,3 +118,6 @@ class TransactionItem(BaseModel):
         conn.close()
 
         return result
+    
+    def get_all(self):
+        pass

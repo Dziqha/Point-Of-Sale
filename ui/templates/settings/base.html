@@ -1,66 +1,73 @@
 <!-- /dashboard/base.html -->
 {% extends "base.html" %} {% block content %}
-<nav class="flex justify-between items-center px-8 py-4 shadow" role="navigation" aria-label="main navigation">
-    <div class="flex items-center">
-        <a class="flex items-center">
-            <img src="../../assets/images/logo.png" alt="Logo" class="h-12 w-auto" />
-        </a>
-    </div>
-    <div class="relative">
-        <button class="flex items-center focus:outline-none">
-            <span id="username" class="mr-2"></span>
-            <i class="fa-solid fa-chevron-down"></i>
+<nav
+  class="flex justify-between items-center px-8 py-4 shadow"
+  role="navigation"
+  aria-label="main navigation"
+>
+  <div class="flex items-center">
+    <a class="flex items-center">
+      <img src="../../assets/images/logo.png" alt="Logo" class="h-12 w-auto" />
+    </a>
+  </div>
+  <div class="relative">
+    <div class="dropdown is-right">
+      <div class="dropdown-trigger">
+        <button aria-haspopup="true" aria-controls="profile-dropdown">
+          <span id="username"></span>
+          <span class="icon is-small">
+            <i class="fas fa-angle-down" aria-hidden="true"></i>
+          </span>
         </button>
-        <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg hidden">
-            <button class="block px-4 py-2 text-sm" onclick="logout()">Logout</button>
+      </div>
+      <div class="dropdown-menu" id="profile-dropdown" role="menu">
+        <div class="dropdown-content">
+          <div class="dropdown-item">
+            <button onclick="logout()">Logout</button>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </nav>
 
 <div class="flex">
-    <div class="w-1/6 p-8 shadow h-screen">
-        <ul>
-            <li class="mb-4">
-                <a href="admin.html" class="flex items-center hover:underline">
-                    <i class="fas fa-box mr-2 w-5"></i>
-                    <span>Admin</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-    <div class="w-5/6 p-8">
-        {% block settings_content %}
-        <!-- Dashboard Page -->
-        {% endblock %}
-    </div>
+  <div class="w-1/6 p-8 shadow h-screen">
+    <ul>
+      <li class="mb-4">
+        <a href="users.html" class="flex items-center hover:underline">
+          <i class="fas fa-user mr-2 w-5"></i>
+          <span>Users</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="w-5/6 p-8">
+    {% block settings_content %}
+    <!-- Dashboard Page -->
+    {% endblock %}
+  </div>
 </div>
 
 <script>
-    const dropdownButton = document.querySelector("nav button");
-    const dropdownMenu = document.querySelector("nav .absolute");
+  function logout() {
+    set_cookie("jwt", "", -1);
+    window.location.href = "../index.html";
+  }
 
-    dropdownButton.addEventListener("click", () => {
-        dropdownMenu.classList.toggle("hidden");
-    });
+  function set_cookie(name, value, hours) {
+    let date = new Date();
+    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
 
-    function logout() {
-        set_cookie("jwt", "", -1);
-        window.location.href = "../index.html";
-    }
+  document.addEventListener("DOMContentLoaded", async () => {
+    token = getCookie("jwt");
+    sessionData = await eel.get_current_session(token)();
 
-    function set_cookie(name, value, hours) {
-        let date = new Date();
-        date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-        document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-        token = getCookie("jwt");
-        sessionData = await eel.get_current_session(token)();
-
-        const usernameElement = document.getElementById("username");
-        usernameElement.textContent = sessionData.username;
-    });
+    const usernameElement = document.getElementById("username");
+    usernameElement.textContent = sessionData.username;
+  });
 </script>
 
 {% endblock %}

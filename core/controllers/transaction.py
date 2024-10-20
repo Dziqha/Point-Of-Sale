@@ -1,18 +1,19 @@
 import eel
+from typing import Optional
 from datetime import datetime
 from decimal import Decimal
 from core.services.transaction import Transaction
 
 @eel.expose
-def create_transaction(user_id: int, customer_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, voucher_id: int = None):
+def create_transaction(user_id: int, total: float, discount: float, final_total: float, paid_amount: float, return_amount: float, customer_id: Optional[int] = None, voucher_id: Optional[int] = None):
     transaction = Transaction(
         user_id=user_id,
         customer_id=customer_id,
-        total=Decimal(total),
-        discount=Decimal(discount),
-        final_total=Decimal(final_total),
-        paid_amount=Decimal(paid_amount),
-        return_amount=Decimal(return_amount),
+        total=total,
+        discount=discount,
+        final_total=final_total,
+        paid_amount=paid_amount,
+        return_amount=return_amount,
         voucher_id=voucher_id
     )
     result = transaction.create()
