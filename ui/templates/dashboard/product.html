@@ -308,7 +308,7 @@
           <td>${product.name}</td>
           <td>${product.sku || ""}</td>
           <td>${product.barcode}</td>
-          <td>${getCategoryName(product.category_id)}</td>
+          <td>${product.category_name}</td>
           <td>${product.price}</td>
           <td>${product.stock}</td>
           <td>
@@ -483,6 +483,8 @@
         const barcodeProduct = await eel.search_product_by_barcode(
           searchTerm
         )();
+
+        console.log(barcodeProduct);
 
         if (barcodeProduct == "Product not found") {
           errorAlert("No products found.");

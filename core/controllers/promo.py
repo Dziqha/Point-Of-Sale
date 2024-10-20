@@ -22,13 +22,13 @@ def update_promo(promo_id: int, name: str, description: str, discount_percentage
 
 @eel.expose
 def delete_promo(promo_id: int):
-    promo = Promo(product_id=0, name="")
+    promo = Promo()
     promo.promo_id = promo_id
     return promo.delete()
 
 @eel.expose
 def get_promo_by_id(promo_id: int):
-    promo = Promo(product_id=0, name="")
+    promo = Promo()
     promo_data = promo.get_by_id(promo_id)
 
     if promo_data is None:
@@ -41,12 +41,13 @@ def get_promo_by_id(promo_id: int):
         "description": promo_data[3],
         "discount_percentage": str(promo_data[4]),
         "start_date": promo_data[5],
-        "end_date": promo_data[6]
+        "end_date": promo_data[6],
+        "product_name": promo_data[7]
     }
 
 @eel.expose
 def get_all_promos():
-    promo = Promo(product_id=0, name="")
+    promo = Promo()
     promos_data = promo.get_all()
     return [
         {
@@ -56,6 +57,7 @@ def get_all_promos():
             "description": p[3],
             "discount_percentage": str(p[4]),
             "start_date": p[5],
-            "end_date": p[6]
+            "end_date": p[6],
+            "product_name": p[7]
         } for p in promos_data
     ]

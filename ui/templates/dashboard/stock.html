@@ -169,8 +169,10 @@
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${movement.movement_id}</td>
-        <td>${movement.product_id}</td>
-        <td>${movement.user_id}</td>
+        <td>${movement.product_name}${
+        movement.sku ? ` (${movement.sku})` : ""
+      }</td>
+        <td>${movement.admin_username}</td>
         <td class="${
           movement.movement_type === "out"
             ? "has-text-danger"

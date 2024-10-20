@@ -38,14 +38,26 @@ class StockMovement(BaseModel):
 
     def get_all(self):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM stock_movements ORDER BY movement_id DESC;''')
+        cursor.execute('''
+            SELECT sm.*, p.name AS product_name, p.sku, u.username AS admin_username
+            FROM stock_movements sm
+            JOIN products p ON sm.product_id = p.product_id
+            JOIN users u ON sm.user_id = u.user_id
+            ORDER BY sm.movement_id DESC
+        ''')
         movements = cursor.fetchall()
         conn.close()
         return movements
-    
+
     def get_by_id(self, movement_id: int):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM stock_movements WHERE movement_id = ?''', (movement_id,))
+        cursor.execute('''
+            SELECT sm.*, p.name AS product_name, p.sku, u.username AS admin_username
+            FROM stock_movements sm
+            JOIN products p ON sm.product_id = p.product_id
+            JOIN users u ON sm.user_id = u.user_id
+            WHERE sm.movement_id = ?
+        ''', (movement_id,))
         movement = cursor.fetchone()
         conn.close()
         return movement
@@ -87,7 +99,14 @@ class StockMovement(BaseModel):
 
     def get_by_product_id(self, product_id: int):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM stock_movements WHERE product_id = ? ORDER BY movement_id DESC''', (product_id,))
+        cursor.execute('''
+            SELECT sm.*, p.name AS product_name, p.sku, u.username AS admin_username
+            FROM stock_movements sm
+            JOIN products p ON sm.product_id = p.product_id
+            JOIN users u ON sm.user_id = u.user_id
+            WHERE sm.product_id = ?
+            ORDER BY sm.movement_id DESC
+        ''', (product_id,))
         movements = cursor.fetchall()
         conn.close()
         return movements

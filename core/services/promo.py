@@ -71,7 +71,14 @@ class Promo(BaseModel):
             print("Database connection error.")
             return None
 
-        cursor.execute('''SELECT * FROM promos WHERE promo_id = ?''', (id,))
+        cursor.execute('''
+            SELECT promo.promo_id, promo.product_id, promo.name, promo.description, 
+                promo.discount_percentage, promo.start_date, promo.end_date, 
+                p.name AS product_name 
+            FROM promos promo
+            JOIN products p ON promo.product_id = p.product_id 
+            WHERE promo.promo_id = ?
+        ''', (id,))
         promo = cursor.fetchone()
         conn.close()
         
@@ -83,7 +90,13 @@ class Promo(BaseModel):
             print("Database connection error.")
             return []
 
-        cursor.execute('''SELECT * FROM promos''')
+        cursor.execute('''
+            SELECT promo.promo_id, promo.product_id, promo.name, promo.description, 
+                promo.discount_percentage, promo.start_date, promo.end_date, 
+                p.name AS product_name 
+            FROM promos promo
+            JOIN products p ON promo.product_id = p.product_id
+        ''')
         promos = cursor.fetchall()
         conn.close()
         

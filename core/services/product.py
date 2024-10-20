@@ -31,14 +31,45 @@ class Product(BaseModel):
 
     def get_all(self):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM products''')
+        cursor.execute('''
+        SELECT 
+            products.product_id, 
+            products.name AS product_name, 
+            products.sku, 
+            products.barcode, 
+            products.stock, 
+            products.price, 
+            products.description,
+            products.category_id,
+            categories.name AS category_name, 
+            products.created_at, 
+            products.updated_at
+        FROM products
+        LEFT JOIN categories ON products.category_id = categories.category_id
+        ''')
         products = cursor.fetchall()
         conn.close()
         return products
 
     def get_by_id(self, product_id: int):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM products WHERE product_id = ?''', (product_id,))
+        cursor.execute('''
+        SELECT 
+            products.product_id, 
+            products.name AS product_name, 
+            products.sku, 
+            products.barcode, 
+            products.stock, 
+            products.price, 
+            products.description, 
+            products.category_id, 
+            categories.name AS category_name, 
+            products.created_at, 
+            products.updated_at
+        FROM products
+        LEFT JOIN categories ON products.category_id = categories.category_id
+        WHERE products.product_id = ?
+        ''', (product_id,))
         product = cursor.fetchone()
         conn.close()
         return product
@@ -79,14 +110,46 @@ class Product(BaseModel):
 
     def search_by_name(self, name: str):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM products WHERE name LIKE ?''', (f'%{name}%',))
+        cursor.execute('''
+        SELECT 
+            products.product_id, 
+            products.name AS product_name, 
+            products.sku, 
+            products.barcode, 
+            products.stock, 
+            products.price, 
+            products.description, 
+            products.category_id, 
+            categories.name AS category_name, 
+            products.created_at, 
+            products.updated_at
+        FROM products
+        LEFT JOIN categories ON products.category_id = categories.category_id
+        WHERE products.name LIKE ?
+        ''', (f'%{name}%',))
         products = cursor.fetchall()
         conn.close()
         return products
 
     def search_by_barcode(self, barcode: str):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM products WHERE barcode = ?''', (barcode,))
-        product = cursor.fetchone()
+        cursor.execute('''
+        SELECT 
+            products.product_id, 
+            products.name AS product_name, 
+            products.sku, 
+            products.barcode, 
+            products.stock, 
+            products.price, 
+            products.description, 
+            products.category_id, 
+            categories.name AS category_name, 
+            products.created_at, 
+            products.updated_at
+        FROM products
+        LEFT JOIN categories ON products.category_id = categories.category_id
+        WHERE products.barcode = ?
+        ''', (barcode,))
+        product = cursor.fetchall()
         conn.close()
         return product

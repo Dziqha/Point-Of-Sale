@@ -18,7 +18,10 @@ def get_all_stock_movements():
             "movement_type": m[3],
             "quantity_change": m[4],
             "reason": m[5],
-            "created_at": m[6]
+            "created_at": m[6],
+            "product_name": m[7],
+            "sku": m[8] if m[8] is not None else "",
+            "admin_username": m[9]
         } for m in movements
     ]
 
@@ -37,7 +40,10 @@ def get_stock_movement_by_id(movement_id: int):
         "movement_type": m[3],
         "quantity_change": m[4],
         "reason": m[5],
-        "created_at": m[6]
+        "created_at": m[6],
+        "product_name": m[7],
+        "sku": m[8] if m[8] is not None else "",
+        "admin_username": m[9]
     }
 
 @eel.expose
@@ -52,6 +58,9 @@ def get_stock_movements_by_product_id(product_id: int):
             "movement_type": m[3],
             "quantity_change": m[4],
             "reason": m[5],
-            "created_at": m[6]
+            "created_at": m[6],
+            "product_name": m[7],
+            "sku": m[8] if m[8] is not None else "",
+            "admin_username": m[9]
         } for m in movements
     ]

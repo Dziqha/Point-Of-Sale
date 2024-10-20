@@ -223,6 +223,7 @@
 
   async function getPromos() {
     const promos = await eel.get_all_promos()();
+    console.log(promos);
     displayPromos(promos);
   }
 
@@ -237,7 +238,7 @@
           <th>${promo.promo_id}</th>
           <td>${promo.name}</td>
           <td>${promo.description}</td>
-          <td>${promo.product_id}</td>
+          <td>${promo.product_name}</td>
           <td>${promo.discount_percentage}%</td>
           <td>${new Date(promo.start_date).toLocaleDateString()}</td>
           <td>${new Date(promo.end_date).toLocaleDateString()}</td>
