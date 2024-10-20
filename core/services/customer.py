@@ -67,12 +67,8 @@ class Customer(BaseModel):
         
         return customer
 
-    def get_all(self) -> list:
+    def get_all(self):
         conn, cursor = db.init_db()
-        if conn is None or cursor is None:
-            print("Database connection error.")
-            return []
-
         cursor.execute('''SELECT * FROM customers''')
         customers = cursor.fetchall()
         conn.close()
