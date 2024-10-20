@@ -21,7 +21,7 @@ def get_db():
         product_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
         sku VARCHAR(50),
-        barcode VARCHAR(50) NOT NULL UNIQUE,
+        barcode VARCHAR(50) NOT NULL,
         category_id INTEGER,
         stock INTEGER DEFAULT 0,
         price INTEGER(10) NOT NULL,
@@ -122,7 +122,7 @@ def get_db():
     CREATE TABLE IF NOT EXISTS vouchers (
         voucher_id INTEGER PRIMARY KEY AUTOINCREMENT,
         code VARCHAR(50) NOT NULL UNIQUE,
-        quota INTEGER
+        quota INTEGER,
         discount_value DECIMAL(10, 2) NOT NULL,
         expiration_date DATE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
