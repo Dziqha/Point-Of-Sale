@@ -42,6 +42,13 @@ class User(BaseModel):
         user = cursor.fetchone()
         conn.close()
         return user
+    
+    def get_by_role(self, role: str):
+        conn, cursor = db.init_db()
+        cursor.execute('''SELECT * FROM users WHERE role = ?''', (role,))
+        user = cursor.fetchall()
+        conn.close()
+        return user
 
     def update(self) -> str:
         if self.user_id is None:
