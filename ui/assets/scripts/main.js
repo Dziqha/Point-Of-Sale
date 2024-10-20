@@ -67,6 +67,40 @@ function getCookie(name) {
   if (parts.length === 2) return parts.pop().split(";").shift();
 }
 
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+}
+
+function formatRupiah(value) {
+  const [whole, fraction] = value.toFixed(2).split(".");
+
+  const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  return `${formattedWhole},${fraction}`;
+}
+
+function inputToRupiah(value) {
+  const cleanedValue = value.replace(/[^,\d]/g, ""); // Remove non-numeric characters
+  const [whole, fraction] = cleanedValue.split(",");
+
+  // Format the whole part with periods for thousands separators
+  const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  // Return the formatted value with the fraction if available
+  return fraction !== undefined
+    ? `${formattedWhole},${fraction}`
+    : formattedWhole;
+}
+
+function formatInputToRupiah(input) {
+  let value = input.value;
+
+  value = inputToRupiah(value);
+
+  input.value = value;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeModals();
 });

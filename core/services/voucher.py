@@ -82,6 +82,25 @@ class Voucher(BaseModel):
         voucher = cursor.fetchone()
         conn.close()
         return voucher
+
+    def get_by_code(self, code: str) -> Optional[Tuple]:
+        conn, cursor = db.init_db()
+
+        current_date = datetime.now().date()
+
+        cursor.execute('''
+        SELECT v.voucher_id, v.code, v.quota, v.discount_value, v.expiration_date, 
+            COUNT(t.voucher_id) as used_quota
+        FROM vouchers v
+        LEFT JOIN transactions t ON v.voucher_id = t.voucher_id
+        WHERE v.code = ? AND v.expiration_date > ? 
+        GROUP BY v.voucher_id
+        HAVING used_quota < v.quota OR v.quota IS NULL
+        ''', (code, current_date))
+
+        voucher = cursor.fetchone()
+        conn.close()
+        return voucher
     
     def get_all(self) -> List[Tuple]:
         conn, cursor = db.init_db()
