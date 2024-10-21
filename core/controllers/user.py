@@ -1,9 +1,10 @@
 import eel
 from core.services.user import User
+from core.lib.hash import hash_password, verify_password
 
 @eel.expose
 def create_user(username: str, password: str, role: str):
-    user = User(username=username, password=password, role=role)
+    user = User(username=username, password=hash_password(password), role=role)
     created_user = user.create()
 
     if isinstance(created_user, User):
@@ -39,6 +40,7 @@ def get_user_by_id(user_id: int):
         }
 
     return None 
+
 @eel.expose
 def get_user_by_role(role: str):
     user = User('', '', '')
@@ -56,11 +58,9 @@ def update_user(user_id: int, password: str):
     if not user_data:
         return {"error": "User not found"}
 
-    user = User(username=user_data['username'], password=password, role=user_data['role'])
+    user = User(username=user_data['username'], password=hash_password(password), role=user_data['role'])
     user.user_id = user_data['id'] 
-    user.update() 
-
-    return {"message": "User updated successfully!"}
+    return user.update()
 
 @eel.expose
 def delete_user(user_id: int):
@@ -70,7 +70,7 @@ def delete_user(user_id: int):
 
 @eel.expose
 def login(username: str, password: str):
-    user = User(username=username, password=password, role='')
+    user = User(username=username, password='', role='')
     token = user.login(username, password)
     
     if token:
@@ -98,3 +98,27 @@ def get_current_session(token: str):
         }
 
     return None
+
+@eel.expose
+def change_password(token: str, old_password: str, new_password: str):
+    user = User('', '', '')
+    session_data = user.get_current_session(token)
+    
+    if isinstance(session_data, dict) and 'error' not in session_data:
+        user_id = session_data['user_id']
+        user_data = get_user_by_id(user_id)
+        
+        if user_data and verify_password(user_data['password'], old_password):
+            hashed_new_password = hash_password(new_password)
+            user = User(username=user_data['username'], password=hashed_new_password, role=user_data['role'])
+            user.user_id = user_id
+            result = user.update()
+            
+            if "successfully" in result:
+                return {"success": True, "message": "Password changed successfully"}
+            else:
+                return {"success": False, "message": "Failed to update password"}
+        else:
+            return {"success": False, "message": "Incorrect old password"}
+    else:
+        return {"success": False, "message": "Invalid session"}

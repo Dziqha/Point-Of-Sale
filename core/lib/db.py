@@ -1,4 +1,5 @@
 import sqlite3
+from .hash import hash_password
 
 def get_db():
     conn = sqlite3.connect('store.db')
@@ -20,7 +21,7 @@ def get_db():
     INSERT INTO users (username, password, role)
     SELECT ?, ?, ?
     WHERE NOT EXISTS (SELECT 1 FROM users);
-    ''', ("superuser", "superuser", "superuser"))
+    ''', ("superuser", hash_password("superuser"), "superuser"))
 
     # Tabel products
     cursor.execute('''

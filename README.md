@@ -13,9 +13,14 @@ Point of Sale adalah aplikasi manajemen penjualan yang memungkinkan pengguna unt
 
 ## Teknologi yang Digunakan 🛠️
 
-- **Bahasa Pemrograman**: Python
+- **Bahasa Pemrograman**: Python, Javascript
 - **Database**: SQLite
-- **Framework**: Eel (untuk tampilan GUI)
+- **Framework**:
+  - Eel (untuk tampilan GUI)
+  - Bulma
+  - TailwindCSS
+  - Font Awesome
+  - Toastify
 
 ## Prasyarat 📋
 
@@ -49,12 +54,32 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki Python 3.x terinstal di sis
 
 ## Cara Menggunakan 🖥️
 
-1. **Daftar Pengguna**: Buat akun baru untuk mulai menggunakan aplikasi.
-2. **Login**: Masuk dengan kredensial Anda.
-3. **Kelola Produk**: Tambah, hapus, atau tampilkan produk yang tersedia.
-4. **Proses Transaksi**: Tambah item ke keranjang dan proses pembayaran.
-5. **Terapkan Voucher**: Gunakan voucher untuk mendapatkan diskon.
-6. **Generate Invoice**: Setelah transaksi, Anda dapat mencetak invoice.
+- **Login Sebagai Superuser**
+
+  Default Username & Password:
+
+  ```
+  Username: superuser
+  Password: superuser
+  ```
+
+  Ganti password untuk `superuser` direkomendasikan.
+
+- **Tambahkan Admin**
+
+  Tambahkan admin untuk mulai mengatur sistem
+
+- **Kelola Data Toko**
+
+  - Buat Kategori
+  - Tambahkan Produk
+  - Tambahkan Stok Produk
+  - Buat Promo
+  - Buat Voucher
+
+- **Buat Akun Kasir**
+
+  Kamu sudah bisa melakukan transaksi 💸
 
 ## Kontribusi 🤝
 

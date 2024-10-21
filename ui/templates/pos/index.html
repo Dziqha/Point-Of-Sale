@@ -287,7 +287,6 @@
   async function addToCart(product) {
     // Get product details by ID
     const productDetails = await eel.get_product_by_id(product.product_id)();
-    console.log(productDetails);
 
     // Check if the product exists
     if (
@@ -312,9 +311,6 @@
       (item) => item.product_id === product.product_id
     );
 
-    console.log("existingItem", existingItem);
-    console.log("discountPercentage", discountPercentage);
-
     if (existingItem) {
       if (existingItem.quantity + 1 <= stock) {
         existingItem.quantity += 1;
@@ -324,7 +320,6 @@
           existingItem.quantity,
           discountPercentage
         );
-        console.log("discountPercentage", existingItem.discountPercentage);
       } else {
         errorAlert(
           `Cannot add more than available stock (${stock}) for ${product.name}.`
@@ -631,10 +626,8 @@
         voucherDiscount = voucher.discount_value || 0;
       }
     }
-    console.log("voucherId", voucherId, voucherDiscount);
 
     const finalTotal = totalAmount - voucherDiscount;
-    console.log("finalTotal", finalTotal);
     const returnAmount = paidAmount - finalTotal;
 
     try {
@@ -714,10 +707,8 @@
   async function printInvoice(transactionId) {
     try {
       const transaction = await eel.get_transaction_by_id(transactionId)();
-      console.log(transaction);
       const transactionItems =
         await eel.get_all_transaction_items_by_transaction_id(transactionId)();
-        console.log(transactionItems);
 
       let invoiceText = "=== INVOICE ===\n\n";
       invoiceText += `ID: ${transactionId}\n`;
@@ -743,12 +734,16 @@
       }
 
       invoiceText += "--------------------\n";
-      invoiceText += `Subtotal: ${formatRupiahv2(subtotal)}\n`;
+      invoiceText += `Subtotal : ${formatRupiahv2(subtotal)}\n`;
       invoiceText += `Tax (10%): ${formatRupiahv2(subtotal * 0.1)}\n`;
-      invoiceText += `Voucher Discount: ${transaction.discount}%\n`;
-      invoiceText += `Total: ${formatRupiahv2(transaction.final_total)}\n\n`;
-      invoiceText += `Paid: ${formatRupiahv2(transaction.paid_amount)}\n`;
-      invoiceText += `Return: ${formatRupiahv2(transaction.return_amount)}\n\n`;
+      invoiceText += `Discount : ${transaction.discount}%\n`;
+      invoiceText += `Total    : ${formatRupiahv2(
+        transaction.final_total
+      )}\n\n`;
+      invoiceText += `Paid     : ${formatRupiahv2(transaction.paid_amount)}\n`;
+      invoiceText += `Return   : ${formatRupiahv2(
+        transaction.return_amount
+      )}\n\n`;
       invoiceText += "Thank you for your purchase!";
 
       const printWindow = window.open("", "_blank");

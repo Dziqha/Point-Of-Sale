@@ -23,7 +23,17 @@
       <div class="dropdown-menu" id="profile-dropdown" role="menu">
         <div class="dropdown-content">
           <div class="dropdown-item">
-            <button onclick="logout()">Logout</button>
+            <button
+              class="button is-dark is-small w-full js-modal-trigger"
+              data-target="change-password-modal"
+            >
+              Change password
+            </button>
+          </div>
+          <div class="dropdown-item">
+            <button class="button is-dark is-small w-full" onclick="logout()">
+              Logout
+            </button>
           </div>
         </div>
       </div>
@@ -91,6 +101,60 @@
   </div>
 </div>
 
+<!-- Change Password Modal -->
+<div id="change-password-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Change Password</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Old Password</label>
+        <div class="control">
+          <input
+            class="input"
+            type="password"
+            id="old-password"
+            placeholder="Old Password"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">New Password</label>
+        <div class="control">
+          <input
+            class="input"
+            type="password"
+            id="new-password"
+            placeholder="New Password"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Confirm Password</label>
+        <div class="control">
+          <input
+            class="input"
+            type="password"
+            id="confirm-password"
+            placeholder="Confirm Password"
+          />
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <div class="buttons">
+        <button class="button is-success" onclick="changePassword()">
+          Change password
+        </button>
+        <button class="button">Cancel</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
 <script>
   function logout() {
     set_cookie("jwt", "", -1);
@@ -101,6 +165,26 @@
     let date = new Date();
     date.setTime(date.getTime() + hours * 60 * 60 * 1000);
     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+
+  async function changePassword() {
+    const oldPassword = document.getElementById("old-password").value;
+    const newPassword = document.getElementById("new-password").value;
+    const confirmPassword = document.getElementById("confirm-password").value;
+
+    if (newPassword !== confirmPassword) {
+      errorAlert("New password and confirm password do not match");
+      return;
+    }
+
+    const token = getCookie("jwt");
+    const result = await eel.change_password(token, oldPassword, newPassword)();
+
+    if (result.success) {
+      successAlert(result.message);
+      closeModal();
+      errorAlert(result.message);
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {

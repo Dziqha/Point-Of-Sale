@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from .base_model import BaseModel
 from core.lib import db
+from core.lib.hash import verify_password
 
 SECRET_KEY = "super_duper_secret_key"
 
@@ -87,11 +88,11 @@ class User(BaseModel):
 
     def login(self, username: str, password: str):
         conn, cursor = db.init_db()
-        cursor.execute('''SELECT * FROM users WHERE username = ? AND password = ?''', (username, password))
+        cursor.execute('''SELECT * FROM users WHERE username = ?''', (username,))
         user = cursor.fetchone()
         conn.close()
 
-        if user:
+        if user and verify_password(user[2], password):
             self.user_id = user[0]
             self.username = user[1]
             self.password = user[2]
