@@ -33,9 +33,7 @@
       ></button>
     </header>
     <section class="modal-card-body">
-      <div id="transaction-details-content">
-        <!-- Transaction details will be populated here -->
-      </div>
+      <div id="transaction-details-content"></div>
       <h3 class="title is-5 mt-4">Cart Items</h3>
       <table class="table is-fullwidth">
         <thead>
@@ -51,8 +49,12 @@
           <!-- Cart items will be populated here -->
         </tbody>
       </table>
+      <div id="pricing-content"></div>
     </section>
     <footer class="modal-card-foot">
+      <button class="button is-success mr-2" onclick="printInvoice()">
+        Print Invoice
+      </button>
       <button class="button" onclick="closeTransactionDetailsModal()">
         Close
       </button>
@@ -62,6 +64,8 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", loadTransactions);
+
+  let currentTransactionId = null;
 
   async function loadTransactions() {
     const transactions = await eel.get_all_transactions()();
@@ -89,6 +93,7 @@
   }
 
   async function viewTransactionDetails(transactionId) {
+    currentTransactionId = transactionId;
     const transaction = await eel.get_transaction_by_id(transactionId)();
     const cartItems = await eel.get_all_transaction_items_by_transaction_id(
       transactionId
@@ -99,21 +104,8 @@
     );
     detailsContent.innerHTML = `
       <p><strong>Transaction ID:</strong> ${transaction.transaction_id}</p>
-      <p><strong>Cashier ID:</strong> ${transaction.user_id}</p>
-      <p><strong>Customer ID:</strong> ${transaction.customer_id || "N/A"}</p>
-      <p><strong>Total:</strong> Rp. ${inputToRupiah(transaction.total)}</p>
-      <p><strong>Discount:</strong> Rp. ${inputToRupiah(
-        transaction.discount
-      )}</p>
-      <p><strong>Final Total:</strong> Rp. ${inputToRupiah(
-        transaction.final_total
-      )}</p>
-      <p><strong>Paid Amount:</strong> Rp. ${inputToRupiah(
-        transaction.paid_amount
-      )}</p>
-      <p><strong>Return Amount:</strong> Rp. ${inputToRupiah(
-        transaction.return_amount
-      )}</p>
+      <p><strong>Cashier:</strong> ${transaction.cashier_name}</p>
+      <p><strong>Customer:</strong> ${transaction.customer_phone || "N/A"}</p>
       <p><strong>Created At:</strong> ${new Date(
         transaction.created_at
       ).toLocaleString()}</p>
@@ -134,6 +126,38 @@
       cartItemsTableBody.appendChild(row);
     });
 
+    const pricingContent = document.getElementById("pricing-content");
+    pricingContent.innerHTML = `
+    <div class="flex">
+      <div class="w-1/3"></div>
+      <div class="w-2/3">
+        <div class="text-right mr-8">
+          <div class="flex justify-between">
+            <span><strong>Subtotal:</strong></span>
+            <span>Rp. ${inputToRupiah(transaction.total)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span><strong>Discount:</strong></span>
+            <span>${transaction.discount}%</span>
+          </div>
+          <div class="flex justify-between font-bold text-xl">
+            <span><strong>Total:</strong></span>
+            <span>Rp. ${inputToRupiah(transaction.final_total)}</span>
+          </div>
+          <div class="flex justify-between mt-4">
+            <span><strong>Paid Amount:</strong></span>
+            <span>Rp. ${inputToRupiah(transaction.paid_amount)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span><strong>Return Amount:</strong></span>
+            <span>Rp. ${inputToRupiah(transaction.return_amount)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+      
+    `;
+
     openTransactionDetailsModal();
   }
 
@@ -145,6 +169,78 @@
   function closeTransactionDetailsModal() {
     const modal = document.getElementById("transaction-details-modal");
     modal.classList.remove("is-active");
+  }
+
+  async function printInvoice() {
+    if (!currentTransactionId) {
+      console.error("No transaction selected");
+      return;
+    }
+
+    try {
+      const transaction = await eel.get_transaction_by_id(
+        currentTransactionId
+      )();
+      const transactionItems =
+        await eel.get_all_transaction_items_by_transaction_id(
+          currentTransactionId
+        )();
+
+      let invoiceText = "=== INVOICE ===\n\n";
+      invoiceText += `ID: ${currentTransactionId}\n`;
+      invoiceText += `Cashier: ${transaction.cashier_name}\n`;
+      invoiceText += `Customer: ${
+        transaction.customer_id ? `${transaction.customer_phone}` : "N/A"
+      }\n`;
+      invoiceText += `Date: ${new Date(
+        transaction.created_at
+      ).toLocaleString()}\n\n`;
+      invoiceText += "Items:\n";
+      invoiceText += "--------------------\n";
+
+      let subtotal = 0;
+      for (const item of transactionItems) {
+        const productDisplay = item.sku
+          ? `${item.product_name} (${item.sku})`
+          : item.product_name;
+        invoiceText += `${item.quantity}x ${productDisplay} @ ${formatRupiahv2(
+          item.price
+        )}\n`;
+        if (item.discount > 0) {
+          invoiceText += `   Discount: ${formatRupiahv2(item.discount)}\n`;
+        }
+        invoiceText += `   Subtotal: ${formatRupiahv2(item.total)}\n`;
+        subtotal += parseInt(item.total);
+      }
+
+      invoiceText += "--------------------\n";
+      invoiceText += `Subtotal : ${formatRupiahv2(subtotal)}\n`;
+      invoiceText += `Tax (10%): ${formatRupiahv2(subtotal * 0.1)}\n`;
+      invoiceText += `Discount : ${transaction.discount}%\n`;
+      invoiceText += `Total    : ${formatRupiahv2(
+        transaction.final_total
+      )}\n\n`;
+      invoiceText += `Paid     : ${formatRupiahv2(transaction.paid_amount)}\n`;
+      invoiceText += `Return   : ${formatRupiahv2(
+        transaction.return_amount
+      )}\n\n`;
+      invoiceText += "Thank you for your purchase!";
+
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write("<pre>" + invoiceText + "</pre>");
+      printWindow.document.close();
+      printWindow.print();
+    } catch (error) {
+      console.error("Error printing invoice:", error);
+      alert("Failed to print invoice. Please try again.");
+    }
+  }
+
+  function formatRupiahv2(amount) {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+    }).format(amount);
   }
 </script>
 

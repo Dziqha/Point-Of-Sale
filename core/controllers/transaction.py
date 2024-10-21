@@ -73,7 +73,9 @@ def get_transaction_by_id(transaction_id: int):
             "paid_amount": str(transaction_data[6]),
             "return_amount": str(transaction_data[7]),
             "voucher_id": transaction_data[8],
-            "created_at": str(transaction_data[9])
+            "created_at": str(transaction_data[9]),
+            "cashier_name": transaction_data[10],
+            "customer_phone": transaction_data[11]
         }
     return {"status": "failed", "message": "Transaction not found."}
 
@@ -100,7 +102,9 @@ def get_all_transactions():
             "paid_amount": str(t[6]),
             "return_amount": str(t[7]),
             "voucher_id": t[8],
-            "created_at": str(t[9])
+            "created_at": str(t[9]),
+            "cashier_name": t[10],
+            "customer_phone": t[11]
         } for t in transactions_data
     ]
 

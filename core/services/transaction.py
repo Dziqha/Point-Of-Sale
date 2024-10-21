@@ -77,26 +77,46 @@ class Transaction(BaseModel):
     def get_by_id(self, id: int) -> Optional[Tuple[Any]]:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
-            print("Database connection error.")
+            print("Database error: Koneksi database gagal.")
             return None
 
-        cursor.execute('''SELECT * FROM transactions WHERE transaction_id = ?''', (id,))
-        transaction = cursor.fetchone()
-        conn.close()
-        
-        return transaction
+        try:
+            cursor.execute('''
+                SELECT t.*, u.username as cashier_name, c.phone as customer_phone
+                FROM transactions t
+                LEFT JOIN users u ON t.user_id = u.user_id
+                LEFT JOIN customers c ON t.customer_id = c.customer_id
+                WHERE t.transaction_id = ?
+            ''', (id,))
+            transaction = cursor.fetchone()
+            return transaction
+        except Exception as e:
+            print(f"Database error: {e}")
+            return None
+        finally:
+            conn.close()
 
     def get_all(self) -> List[Tuple[Any]]:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
-            print("Database connection error.")
+            print("Database error: Koneksi database gagal.")
             return []
 
-        cursor.execute('''SELECT * FROM transactions ORDER BY transaction_id DESC''')
-        transactions = cursor.fetchall()
-        conn.close()
-        
-        return transactions
+        try:
+            cursor.execute('''
+                SELECT t.*, u.username as cashier_name, c.phone as customer_phone
+                FROM transactions t
+                LEFT JOIN users u ON t.user_id = u.user_id
+                LEFT JOIN customers c ON t.customer_id = c.customer_id
+                ORDER BY t.transaction_id DESC
+            ''')
+            transactions = cursor.fetchall()
+            return transactions
+        except Exception as e:
+            print(f"Database error: {e}")
+            return []
+        finally:
+            conn.close()
 
     def get_by_user_id(self, user_id: int) -> List[Tuple[Any]]:
         conn, cursor = db.init_db()

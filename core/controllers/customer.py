@@ -34,6 +34,20 @@ def get_customer_by_id(customer_id: int):
     return {"status": "failed", "message": "Customer not found."}
 
 @eel.expose
+def get_customer_by_phone(customer_phone: str):
+    customer = Customer(name="")
+    customer_data = customer.get_by_phone(customer_phone)
+    if customer_data:
+        return {
+            "customer_id": customer_data[0],
+            "name": customer_data[1],
+            "email": customer_data[2],
+            "phone": customer_data[3],
+            "address": customer_data[4]
+        }
+    return {"status": "failed", "message": "Customer not found."}
+
+@eel.expose
 def get_all_customers():
     customer = Customer(name="")
     customers_data = customer.get_all()

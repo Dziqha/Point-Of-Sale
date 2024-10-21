@@ -142,8 +142,8 @@ def get_db():
     CREATE TABLE IF NOT EXISTS customers (
         customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(100) NOT NULL,
-        email VARCHAR(100),
-        phone VARCHAR(20),
+        email VARCHAR(100) UNIQUE,
+        phone VARCHAR(20) UNIQUE,
         address TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );

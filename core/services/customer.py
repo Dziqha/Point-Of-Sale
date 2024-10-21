@@ -74,3 +74,15 @@ class Customer(BaseModel):
         conn.close()
         
         return customers
+
+    def get_by_phone(self, phone: str) -> Optional[Tuple[Any]]:
+        conn, cursor = db.init_db()
+        if conn is None or cursor is None:
+            print("Database connection error.")
+            return None
+
+        cursor.execute('''SELECT * FROM customers WHERE phone = ?''', (phone,))
+        customer = cursor.fetchone()
+        conn.close()
+        
+        return customer

@@ -84,17 +84,16 @@ function formatRupiahv2(amount) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
-
 function inputToRupiah(value) {
-  const cleanedValue = value.replace(/[^,\d]/g, ""); // Remove non-numeric characters
+  const cleanedValue = value.replace(/[^,\d]/g, "");
   const [whole, fraction] = cleanedValue.split(",");
 
-  // Format the whole part with periods for thousands separators
   const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
-  // Return the formatted value with the fraction if available
   return fraction !== undefined
     ? `${formattedWhole},${fraction}`
     : formattedWhole;
