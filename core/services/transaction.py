@@ -92,7 +92,7 @@ class Transaction(BaseModel):
             print("Database connection error.")
             return []
 
-        cursor.execute('''SELECT * FROM transactions''')
+        cursor.execute('''SELECT * FROM transactions ORDER BY transaction_id DESC''')
         transactions = cursor.fetchall()
         conn.close()
         

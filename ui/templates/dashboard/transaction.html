@@ -1,0 +1,151 @@
+{% extends "/dashboard/base.html" %} {% block dashboard_content %}
+
+<h1 class="text-2xl" id="transactions">Transactions</h1>
+
+<div class="mt-4">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cashier</th>
+        <th>Customer</th>
+        <th>Total</th>
+        <th>Created At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="transactions-table-body">
+      <!-- Transactions will be populated here -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Transaction Details Modal -->
+<div id="transaction-details-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Transaction Details</p>
+      <button
+        class="delete"
+        aria-label="close"
+        onclick="closeTransactionDetailsModal()"
+      ></button>
+    </header>
+    <section class="modal-card-body">
+      <div id="transaction-details-content">
+        <!-- Transaction details will be populated here -->
+      </div>
+      <h3 class="title is-5 mt-4">Cart Items</h3>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Discount</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="cart-items-table-body">
+          <!-- Cart items will be populated here -->
+        </tbody>
+      </table>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button" onclick="closeTransactionDetailsModal()">
+        Close
+      </button>
+    </footer>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", loadTransactions);
+
+  async function loadTransactions() {
+    const transactions = await eel.get_all_transactions()();
+    const tableBody = document.getElementById("transactions-table-body");
+    tableBody.innerHTML = "";
+
+    transactions.forEach((transaction) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${transaction.transaction_id}</td>
+        <td>${transaction.user_id}</td>
+        <td>${transaction.customer_id || "N/A"}</td>
+        <td>Rp. ${inputToRupiah(transaction.final_total)}</td>
+        <td>${new Date(transaction.created_at).toLocaleString()}</td>
+        <td>
+          <button class="button is-small is-info" onclick="viewTransactionDetails(${
+            transaction.transaction_id
+          })">
+            <i class="fas fa-info-circle"></i>
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  async function viewTransactionDetails(transactionId) {
+    const transaction = await eel.get_transaction_by_id(transactionId)();
+    const cartItems = await eel.get_all_transaction_items_by_transaction_id(
+      transactionId
+    )();
+
+    const detailsContent = document.getElementById(
+      "transaction-details-content"
+    );
+    detailsContent.innerHTML = `
+      <p><strong>Transaction ID:</strong> ${transaction.transaction_id}</p>
+      <p><strong>Cashier ID:</strong> ${transaction.user_id}</p>
+      <p><strong>Customer ID:</strong> ${transaction.customer_id || "N/A"}</p>
+      <p><strong>Total:</strong> Rp. ${inputToRupiah(transaction.total)}</p>
+      <p><strong>Discount:</strong> Rp. ${inputToRupiah(
+        transaction.discount
+      )}</p>
+      <p><strong>Final Total:</strong> Rp. ${inputToRupiah(
+        transaction.final_total
+      )}</p>
+      <p><strong>Paid Amount:</strong> Rp. ${inputToRupiah(
+        transaction.paid_amount
+      )}</p>
+      <p><strong>Return Amount:</strong> Rp. ${inputToRupiah(
+        transaction.return_amount
+      )}</p>
+      <p><strong>Created At:</strong> ${new Date(
+        transaction.created_at
+      ).toLocaleString()}</p>
+    `;
+
+    const cartItemsTableBody = document.getElementById("cart-items-table-body");
+    cartItemsTableBody.innerHTML = "";
+
+    cartItems.forEach((item) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${item.product_name} ${item.sku ? `(${item.sku})` : ""}</td>
+        <td>${item.quantity}</td>
+        <td>Rp. ${inputToRupiah(item.price)}</td>
+        <td>${inputToRupiah(item.discount)}%</td>
+        <td>Rp. ${inputToRupiah(item.total)}</td>
+      `;
+      cartItemsTableBody.appendChild(row);
+    });
+
+    openTransactionDetailsModal();
+  }
+
+  function openTransactionDetailsModal() {
+    const modal = document.getElementById("transaction-details-modal");
+    modal.classList.add("is-active");
+  }
+
+  function closeTransactionDetailsModal() {
+    const modal = document.getElementById("transaction-details-modal");
+    modal.classList.remove("is-active");
+  }
+</script>
+
+{% endblock %}

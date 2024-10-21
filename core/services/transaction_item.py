@@ -21,14 +21,10 @@ class TransactionItem(BaseModel):
         try:
             conn.execute('BEGIN;')
 
-            cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, price, discount, quantity, total)
-                            SELECT 
-                                ?,
-                                p.product_id,
-                                p.price,
-                                IFNULL(pr.discount_percentage, 0),
-                                ?,
-                                (p.price - IFNULL(pr.discount_percentage, 0)) * ?
+            # 1. Fetch product price and discount
+            cursor.execute('''SELECT 
+                                p.price, 
+                                IFNULL(pr.discount_percentage, 0) AS discount_percentage
                             FROM 
                                 products p
                             LEFT JOIN 
@@ -40,13 +36,30 @@ class TransactionItem(BaseModel):
                                 p.product_id = pr.product_id
                             WHERE 
                                 p.product_id = ?;
-            ''', (self.transaction_id, self.quantity, self.quantity, self.product_id))
+                ''', (self.product_id,))
+            product = cursor.fetchone()
 
-            # Update stock for the product
+            if not product:
+                return {"status": "error", "message": "Product not found."}
+
+            price = product[0]
+            discount_percentage = product[1]
+
+            # 2. Calculate discount and total
+            discount_amount = price * (discount_percentage / 100)
+            final_price = price - discount_amount
+            total = final_price * self.quantity
+
+            # 3. Insert into transaction_items
+            cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, price, discount, quantity, total)
+                            VALUES (?, ?, ?, ?, ?, ?);
+                ''', (self.transaction_id, self.product_id, price, discount_percentage, self.quantity, total))
+
+            # 4. Update stock
             cursor.execute('''UPDATE products
                             SET stock = stock - ?
                             WHERE product_id = ? AND stock >= ?;
-            ''', (self.quantity, self.product_id, self.quantity))
+                ''', (self.quantity, self.product_id, self.quantity))
 
             conn.commit()
 

@@ -340,20 +340,80 @@
     const product = await eel.get_product_by_id(productId)();
     const detailsContent = document.getElementById("product-details-content");
     detailsContent.innerHTML = `
-      <p><strong>ID:</strong> ${product.product_id}</p>
-      <p><strong>Name:</strong> ${product.name}</p>
-      <p><strong>SKU:</strong> ${product.sku || "N/A"}</p>
-      <p><strong>Barcode:</strong> ${product.barcode}</p>
-      <p><strong>Category:</strong> ${getCategoryName(product.category_id)}</p>
-      <p><strong>Price:</strong> ${product.price}</p>
-      <p><strong>Stock:</strong> ${product.stock}</p>
-      <p><strong>Description:</strong> ${product.description || "N/A"}</p>
-      <p><strong>Created At:</strong> ${new Date(
-        product.created_at
-      ).toLocaleString()}</p>
-      <p><strong>Updated At:</strong> ${new Date(
-        product.updated_at
-      ).toLocaleString()}</p>
+      <div class="field">
+        <label class="label">ID</label>
+        <div class="control">
+          <input class="input" type="text" value="${
+            product.product_id
+          }" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input class="input" type="text" value="${product.name}" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">SKU</label>
+        <div class="control">
+          <input class="input" type="text" value="${
+            product.sku || "N/A"
+          }" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Barcode</label>
+        <div class="control">
+          <input class="input" type="text" value="${
+            product.barcode
+          }" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Category</label>
+        <div class="control">
+          <input class="input" type="text" value="${
+            product.category_name || "N/A"
+          }" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Price</label>
+        <div class="control">
+          <input class="input" type="text" value="${product.price}" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Stock</label>
+        <div class="control">
+          <input class="input" type="text" value="${product.stock}" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+          <textarea class="textarea" readonly>${
+            product.description || "N/A"
+          }</textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Created at</label>
+        <div class="control">
+          <input class="input" type="text" value="${
+            product.created_at
+          }" readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Stock</label>
+        <div class="control">
+          <input class="input" type="text" value="${
+            product.updated_at
+          }" readonly />
+        </div>
+      </div>
     `;
     const modal = document.getElementById("product-details-modal");
     modal.classList.add("is-active");

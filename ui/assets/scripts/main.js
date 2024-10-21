@@ -80,6 +80,13 @@ function formatRupiah(value) {
   return `${formattedWhole},${fraction}`;
 }
 
+function formatRupiahv2(amount) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+  }).format(amount);
+}
+
 function inputToRupiah(value) {
   const cleanedValue = value.replace(/[^,\d]/g, ""); // Remove non-numeric characters
   const [whole, fraction] = cleanedValue.split(",");
@@ -100,6 +107,26 @@ function formatInputToRupiah(input) {
 
   input.value = value;
 }
+
+// function formatRupiah(amount) {
+//   return new Intl.NumberFormat("id-ID", {
+//     style: "currency",
+//     currency: "IDR",
+//   }).format(amount);
+// }
+
+// function parseRupiah(rupiahString) {
+//   return parseInt(rupiahString.replace(/[^\d]/g, "")) || 0;
+// }
+
+// function formatInputToRupiah(input) {
+//   let value = input.value.replace(/[^\d]/g, "");
+//   if (value !== "") {
+//     input.value = formatRupiah(parseInt(value));
+//   } else {
+//     input.value = "";
+//   }
+//}
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeModals();
