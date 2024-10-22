@@ -2,6 +2,19 @@
 
 <h1 class="text-2xl" id="transactions">Transactions</h1>
 
+<!-- Search Transaction -->
+<div class="mt-4 flex items-center gap-2 max-w-xl">
+  <input
+    class="input"
+    type="number"
+    id="search-input"
+    placeholder="Search transaction by ID"
+  />
+  <button class="button" onclick="serachTransaction()">
+    <i class="fas fa-search mr-2"></i> Search
+  </button>
+</div>
+
 <div class="mt-4">
   <table class="table">
     <thead>
@@ -69,6 +82,10 @@
 
   async function loadTransactions() {
     const transactions = await eel.get_all_transactions()();
+    displayTransactions(transactions);
+  }
+
+  function displayTransactions(transactions) {
     const tableBody = document.getElementById("transactions-table-body");
     tableBody.innerHTML = "";
 
@@ -76,8 +93,8 @@
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${transaction.transaction_id}</td>
-        <td>${transaction.user_id}</td>
-        <td>${transaction.customer_id || "N/A"}</td>
+        <td>${transaction.user_id} - ${transaction.cashier_name}</td>
+        <td>${transaction.customer_phone || "N/A"}</td>
         <td>Rp. ${inputToRupiah(transaction.final_total)}</td>
         <td>${new Date(transaction.created_at).toLocaleString()}</td>
         <td>
@@ -137,7 +154,7 @@
             <span>Rp. ${inputToRupiah(transaction.total)}</span>
           </div>
           <div class="flex justify-between">
-            <span><strong>Discount:</strong></span>
+            <span><strong>Voucher:</strong></span>
             <span>${transaction.discount}%</span>
           </div>
           <div class="flex justify-between font-bold text-xl">
@@ -216,7 +233,7 @@
       invoiceText += "--------------------\n";
       invoiceText += `Subtotal : ${formatRupiahv2(subtotal)}\n`;
       invoiceText += `Tax (10%): ${formatRupiahv2(subtotal * 0.1)}\n`;
-      invoiceText += `Discount : ${transaction.discount}%\n`;
+      invoiceText += `Voucher  : ${transaction.discount}%\n`;
       invoiceText += `Total    : ${formatRupiahv2(
         transaction.final_total
       )}\n\n`;
@@ -236,11 +253,21 @@
     }
   }
 
-  function formatRupiahv2(amount) {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(amount);
+  async function serachTransaction() {
+    const transactionId = document.getElementById("search-input").value;
+
+    if (!transactionId) {
+      loadTransactions();
+      return;
+    }
+
+    const result = await eel.get_transaction_by_id(parseInt(transactionId))();
+
+    if (result.status == "failed") {
+      errorAlert(result.message);
+    } else {
+      displayTransactions([result]);
+    }
   }
 </script>
 

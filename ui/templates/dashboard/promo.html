@@ -11,6 +11,25 @@
   </button>
 </div>
 
+<!-- Search Promo -->
+<div class="mb-4 flex items-center gap-2 max-w-xl">
+  <div class="select">
+    <select id="search-type">
+      <option value="name">By name</option>
+      <option value="id">By id</option>
+    </select>
+  </div>
+  <input
+    class="input"
+    type="text"
+    id="search-input"
+    placeholder="Search customer"
+  />
+  <button class="button" onclick="searchPromo()">
+    <i class="fas fa-search mr-2"></i> Search
+  </button>
+</div>
+
 <!-- Promo Table -->
 <table class="table">
   <thead>
@@ -284,7 +303,9 @@
       const productElement = document.createElement("div");
       productElement.className =
         "p-2 hover:bg-gray-700 cursor-pointer text-white";
-      productElement.innerHTML = `<p>${product.name} (${product.sku}) - ${product.barcode}</p>`;
+      productElement.innerHTML = `<p>${product.name} ${
+        product.sku ? `(${product.sku})` : ""
+      } - ${product.barcode}</p>`;
       productElement.onclick = () => onSelectCallback(product);
       resultsContainer.appendChild(productElement);
     });
@@ -432,6 +453,41 @@
       const modal = document.getElementById("delete-promo-modal");
       modal.classList.remove("is-active");
       getPromos();
+    }
+  }
+
+  async function searchPromo() {
+    const searchTerm = document.getElementById("search-input").value;
+    const searchType = document.getElementById("search-type").value;
+
+    if (!searchTerm) {
+      getPromos();
+      return;
+    }
+
+    let result;
+
+    switch (searchType) {
+      case "name":
+        result = await eel.get_all_promos_by_name(searchTerm)();
+        break;
+      case "id":
+        result = await eel.get_promo_by_id(searchTerm)();
+        if (result == "Promo not found") {
+          errorAlert(result);
+          return;
+        }
+        result = [result];
+        break;
+      default:
+        errorAlert("Invalid search type.");
+        return;
+    }
+
+    if (result.length === 0) {
+      errorAlert("Promo not found");
+    } else {
+      displayPromos(result);
     }
   }
 

@@ -1,5 +1,90 @@
 {% extends "/dashboard/base.html" %} {% block dashboard_content %}
-<h1>Dashboard</h1>
+<h1 class="text-2xl">Dashboard</h1>
 
-<script type="text/javascript"></script>
+<h1 class="text-xl mt-8">Transaction</h1>
+
+<div class="max-w-xl">
+  <nav class="level is-mobile mt-8">
+    <div class="level-item has-text-centered">
+      <div>
+        <p class="heading">Today</p>
+        <p id="today-stats" class="title">0</p>
+      </div>
+    </div>
+    <div class="level-item has-text-centered">
+      <div>
+        <p class="heading">A Week</p>
+        <p id="week-stats" class="title">0</p>
+      </div>
+    </div>
+    <div class="level-item has-text-centered">
+      <div>
+        <p class="heading">A Month</p>
+        <p id="month-stats" class="title">0</p>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<h1 class="text-xl mt-16">Out of Stock</h1>
+
+<!-- Product Table -->
+<table class="table mt-4">
+  <thead>
+    <tr>
+      <th><abbr title="Position">ID</abbr></th>
+      <th>Name</th>
+      <th>SKU</th>
+      <th>Barcode</th>
+      <th>Category</th>
+      <th>Price</th>
+      <th>Stock</th>
+    </tr>
+  </thead>
+  <tbody id="product-table-body"></tbody>
+</table>
+
+<script type="text/javascript">
+  async function getProducts() {
+    const products = await eel.get_out_of_stock()();
+    displayProducts(products);
+  }
+
+  async function getTransactionStats() {
+    const stats = await eel.get_transaction_stats()();
+
+    document.getElementById("today-stats").innerText =
+      stats.daily_new_transactions;
+    document.getElementById("week-stats").innerText =
+      stats.weekly_new_transactions;
+    document.getElementById("month-stats").innerText =
+      stats.monthly_new_transactions;
+  }
+
+  function displayProducts(products) {
+    const tableBody = document.getElementById("product-table-body");
+    tableBody.innerHTML = "";
+
+    if (Array.isArray(products)) {
+      products.forEach((product) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <th>${product.product_id}</th>
+          <td>${product.name}</td>
+          <td>${product.sku || ""}</td>
+          <td>${product.barcode}</td>
+          <td>${product.category_name || "N/A"}</td>
+          <td>${product.price}</td>
+          <td>${product.stock}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    } else {
+      console.error("Expected products to be an array but got:", products);
+    }
+  }
+
+  getProducts();
+  getTransactionStats();
+</script>
 {% endblock %}

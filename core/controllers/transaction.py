@@ -134,3 +134,26 @@ def get_transactions_by_user_id(user_id: int):
             "created_at": str(t[9])
         } for t in transactions_data
     ]
+
+@eel.expose
+def get_transaction_stats():
+    transaction = Transaction(
+        user_id=0,
+        customer_id=0, 
+        total=Decimal(0), 
+        discount=Decimal(0), 
+        final_total=Decimal(0), 
+        paid_amount=Decimal(0), 
+        return_amount=Decimal(0)
+    )
+    stats = transaction.get_stats()
+
+    # Extract the first element of the outer array
+    if stats and isinstance(stats[0], (list, tuple)):
+        stats = stats[0]  # Unwrap the inner list
+
+    return {
+        "daily_new_transactions": stats[0],
+        "weekly_new_transactions": stats[1],
+        "monthly_new_transactions": stats[2],
+    }

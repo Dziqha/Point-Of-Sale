@@ -79,3 +79,20 @@ def get_active_product_promo(product_id: int):
         "start_date": active_promo_data[5],
         "end_date": active_promo_data[6],
     }
+
+@eel.expose
+def get_all_promos_by_name(name: str):
+    promo = Promo()
+    promos_data = promo.get_by_name(name)
+    return [
+        {
+            "promo_id": p[0],
+            "product_id": p[1],
+            "name": p[2],
+            "description": p[3],
+            "discount_percentage": str(p[4]),
+            "start_date": p[5],
+            "end_date": p[6],
+            "product_name": p[7]
+        } for p in promos_data
+    ]

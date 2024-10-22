@@ -51,6 +51,29 @@ class Product(BaseModel):
         conn.close()
         return products
 
+    def get_out_of_stock(self):
+        conn, cursor = db.init_db()
+        cursor.execute('''
+        SELECT 
+            products.product_id, 
+            products.name AS product_name, 
+            products.sku, 
+            products.barcode, 
+            products.stock, 
+            products.price, 
+            products.description,
+            products.category_id,
+            categories.name AS category_name, 
+            products.created_at, 
+            products.updated_at
+        FROM products
+        LEFT JOIN categories ON products.category_id = categories.category_id
+        WHERE stock = 0
+        ''')
+        products = cursor.fetchall()
+        conn.close()
+        return products
+
     def get_by_id(self, product_id: int):
         conn, cursor = db.init_db()
         cursor.execute('''
@@ -153,3 +176,4 @@ class Product(BaseModel):
         product = cursor.fetchall()
         conn.close()
         return product
+

@@ -2,6 +2,7 @@ from decimal import Decimal
 from typing import Optional, List, Tuple, Any
 from .base_model import BaseModel
 from core.lib import db
+from datetime import datetime
 
 class TransactionItem(BaseModel):
     def __init__(self, transaction_id: int, product_id: int, quantity: int, price: Decimal, discount: Decimal, total: Decimal):
@@ -19,47 +20,56 @@ class TransactionItem(BaseModel):
             return {"status": "error", "message": "Database connection error."}
 
         try:
+            now = datetime.now()
+
             conn.execute('BEGIN;')
 
-            # 1. Fetch product price and discount
-            cursor.execute('''SELECT 
-                                p.price, 
-                                IFNULL(pr.discount_percentage, 0) AS discount_percentage
-                            FROM 
-                                products p
-                            LEFT JOIN 
-                                (SELECT product_id, discount_percentage 
-                                FROM promos
-                                WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE
-                                ) pr 
-                            ON 
-                                p.product_id = pr.product_id
-                            WHERE 
-                                p.product_id = ?;
-                ''', (self.product_id,))
+            # 1. Fetch product price and stock
+            cursor.execute('''
+                SELECT price, stock
+                FROM products
+                WHERE product_id = ?;
+            ''', (self.product_id,))
             product = cursor.fetchone()
 
             if not product:
                 return {"status": "error", "message": "Product not found."}
 
             price = product[0]
-            discount_percentage = product[1]
+            stock = product[1]
 
-            # 2. Calculate discount and total
+            if stock < self.quantity:
+                return {"status": "error", "message": "Insufficient stock."}
+
+            # 2. Fetch discount percentage (if available)
+            cursor.execute('''
+                SELECT IFNULL(discount_percentage, 0) AS discount_percentage
+                FROM promos
+                WHERE product_id = ?
+                AND start_date <= ?
+                AND end_date >= ?;
+            ''', (self.product_id, now, now))
+            discount = cursor.fetchone()
+
+            discount_percentage = discount[0] if discount else 0
+
+            # 3. Calculate discount and total
             discount_amount = price * (discount_percentage / 100)
             final_price = price - discount_amount
             total = final_price * self.quantity
 
-            # 3. Insert into transaction_items
-            cursor.execute('''INSERT INTO transaction_items (transaction_id, product_id, price, discount, quantity, total)
-                            VALUES (?, ?, ?, ?, ?, ?);
-                ''', (self.transaction_id, self.product_id, price, discount_percentage, self.quantity, total))
+            # 4. Insert into transaction_items
+            cursor.execute('''
+                INSERT INTO transaction_items (transaction_id, product_id, price, discount, quantity, total)
+                VALUES (?, ?, ?, ?, ?, ?);
+            ''', (self.transaction_id, self.product_id, price, discount_percentage, self.quantity, total))
 
-            # 4. Update stock
-            cursor.execute('''UPDATE products
-                            SET stock = stock - ?
-                            WHERE product_id = ? AND stock >= ?;
-                ''', (self.quantity, self.product_id, self.quantity))
+            # 5. Update stock
+            cursor.execute('''
+                UPDATE products
+                SET stock = stock - ?
+                WHERE product_id = ? AND stock >= ?;
+            ''', (self.quantity, self.product_id, self.quantity))
 
             conn.commit()
 
@@ -71,7 +81,7 @@ class TransactionItem(BaseModel):
         except Exception as e:
             conn.rollback()
             return {"status": "error", "message": f"An error occurred: {str(e)}"}
-        
+
         finally:
             conn.close()
 

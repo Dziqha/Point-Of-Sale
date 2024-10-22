@@ -96,6 +96,7 @@ class Promo(BaseModel):
                 p.name AS product_name 
             FROM promos promo
             JOIN products p ON promo.product_id = p.product_id
+            ORDER BY promo.promo_id DESC
         ''')
         promos = cursor.fetchall()
         conn.close()
@@ -121,3 +122,23 @@ class Promo(BaseModel):
         conn.close()
         
         return active_promo
+    
+    def get_by_name(self, name: str) -> Optional[Tuple[Any]]:
+        conn, cursor = db.init_db()
+        if conn is None or cursor is None:
+            print("Database connection error.")
+            return None
+
+        cursor.execute('''
+            SELECT promo.promo_id, promo.product_id, promo.name, promo.description, 
+                promo.discount_percentage, promo.start_date, promo.end_date, 
+                p.name AS product_name 
+            FROM promos promo
+            JOIN products p ON promo.product_id = p.product_id 
+            WHERE promo.name LIKE ?
+            ORDER BY promo.promo_id DESC
+        ''', (f'%{name}%',))
+        promo = cursor.fetchall()
+        conn.close()
+        
+        return promo

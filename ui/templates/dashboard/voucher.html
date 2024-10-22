@@ -11,6 +11,25 @@
   </button>
 </div>
 
+<!-- Search Voucher -->
+<div class="mb-4 flex items-center gap-2 max-w-xl">
+  <div class="select">
+    <select id="search-type">
+      <option value="code">By code</option>
+      <option value="id">By id</option>
+    </select>
+  </div>
+  <input
+    class="input"
+    type="text"
+    id="search-input"
+    placeholder="Search customer"
+  />
+  <button class="button" onclick="serachVoucher()">
+    <i class="fas fa-search mr-2"></i> Search
+  </button>
+</div>
+
 <!-- Voucher Table -->
 <table class="table">
   <thead>
@@ -369,5 +388,35 @@
       }
     });
   });
+
+  async function serachVoucher() {
+    const searchTerm = document.getElementById("search-input").value;
+    const searchType = document.getElementById("search-type").value;
+
+    if (!searchTerm) {
+      getVouchers();
+      return;
+    }
+
+    let result;
+
+    switch (searchType) {
+      case "code":
+        result = await eel.get_all_voucher_by_code(searchTerm)();
+        break;
+      case "id":
+        result = await eel.get_voucher_by_id(searchTerm)();
+        break;
+      default:
+        errorAlert("Invalid search type.");
+        return;
+    }
+
+    if (result === "Voucher not found") {
+      errorAlert(result);
+    } else {
+      displayVouchers([result]);
+    }
+  }
 </script>
 {% endblock %}

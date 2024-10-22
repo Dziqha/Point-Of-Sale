@@ -55,6 +55,22 @@ def get_voucher_by_code(code: str):
     }
 
 @eel.expose
+def get_all_voucher_by_code(code: str):
+    voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
+    voucher_data = voucher.get_all_by_code(code)
+    
+    if voucher_data is None:
+        return "Voucher not found"
+    
+    return {
+        "voucher_id": voucher_data[0],
+        "code": voucher_data[1],
+        "discount_value": str(voucher_data[3]),
+        "expiration_date": voucher_data[4],
+        "quota": voucher_data[2]
+    }
+
+@eel.expose
 def get_all_vouchers():
     voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
     vouchers_data = voucher.get_all()

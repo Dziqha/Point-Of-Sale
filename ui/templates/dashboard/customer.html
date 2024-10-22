@@ -11,6 +11,25 @@
   </button>
 </div>
 
+<!-- Search Customer -->
+<div class="mb-4 flex items-center gap-2 max-w-xl">
+  <div class="select">
+    <select id="search-type">
+      <option value="phone">By phone</option>
+      <option value="id">By id</option>
+    </select>
+  </div>
+  <input
+    class="input"
+    type="text"
+    id="search-input"
+    placeholder="Search customer"
+  />
+  <button class="button" onclick="searchCustomer()">
+    <i class="fas fa-search mr-2"></i> Search
+  </button>
+</div>
+
 <!-- Customer Table -->
 <table class="table">
   <thead>
@@ -295,6 +314,38 @@
     modal.classList.remove("is-active");
 
     getCustomers();
+  }
+
+  async function searchCustomer() {
+    const searchTerm = document.getElementById("search-input").value;
+    const searchType = document.getElementById("search-type").value;
+
+    if (!searchTerm) {
+      getCustomers();
+      return;
+    }
+
+    let result;
+
+    switch (searchType) {
+      case "phone":
+        result = await eel.get_customer_by_phone(searchTerm)();
+        break;
+      case "id":
+        result = await eel.get_customer_by_id(searchTerm)();
+        break;
+      default:
+        errorAlert("Invalid search type.");
+        return;
+    }
+
+    console.log(result);
+
+    if (result.status == "failed") {
+      errorAlert(result.message);
+    } else {
+      displayCustomers([result]);
+    }
   }
 
   window.onload = getCustomers;

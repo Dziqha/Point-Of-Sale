@@ -672,7 +672,8 @@
       }
     }
 
-    const finalTotal = totalAmount - voucherDiscount;
+    const discountAmount = (totalAmount * voucherDiscount) / 100;
+    const finalTotal = totalAmount - discountAmount;
     const returnAmount = paidAmount - finalTotal;
 
     try {
@@ -781,7 +782,7 @@
                   <span>Rp. ${inputToRupiah(transaction.total)}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span><strong>Discount:</strong></span>
+                  <span><strong>Voucher:</strong></span>
                   <span>${transaction.discount}%</span>
                 </div>
                 <div class="flex justify-between font-bold text-xl">
@@ -854,7 +855,7 @@
       invoiceText += "--------------------\n";
       invoiceText += `Subtotal : ${formatRupiahv2(subtotal)}\n`;
       invoiceText += `Tax (10%): ${formatRupiahv2(subtotal * 0.1)}\n`;
-      invoiceText += `Discount : ${transaction.discount}%\n`;
+      invoiceText += `Voucher  : ${transaction.discount}%\n`;
       invoiceText += `Total    : ${formatRupiahv2(
         transaction.final_total
       )}\n\n`;

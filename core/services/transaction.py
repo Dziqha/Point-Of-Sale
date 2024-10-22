@@ -129,3 +129,16 @@ class Transaction(BaseModel):
         conn.close()
 
         return transactions
+
+    def get_stats(self):
+        conn, cursor = db.init_db()
+        cursor.execute('''
+        SELECT 
+            COUNT(CASE WHEN DATE(created_at) = DATE('now') THEN 1 END) AS daily_new_transactions,
+            COUNT(CASE WHEN DATE(created_at) >= DATE('now', '-7 days') THEN 1 END) AS weekly_new_transactions,
+            COUNT(CASE WHEN DATE(created_at) >= DATE('now', '-1 month') THEN 1 END) AS monthly_new_transactions
+        FROM transactions;
+        ''')
+        stats = cursor.fetchall()
+        conn.close()
+        return stats

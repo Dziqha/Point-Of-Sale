@@ -102,10 +102,21 @@ class Voucher(BaseModel):
         conn.close()
         return voucher
     
+    def get_all_by_code(self, code: str) -> Optional[Tuple]:
+        conn, cursor = db.init_db()
+
+        cursor.execute('''
+        SELECT * FROM vouchers WHERE code = ? ORDER BY voucher_id DESC
+        ''', (code,))
+
+        voucher = cursor.fetchone()
+        conn.close()
+        return voucher
+    
     def get_all(self) -> List[Tuple]:
         conn, cursor = db.init_db()
 
-        cursor.execute('''SELECT * FROM vouchers''')
+        cursor.execute('''SELECT * FROM vouchers ORDER BY voucher_id DESC''')
         vouchers = cursor.fetchall()
         conn.close()
         return vouchers

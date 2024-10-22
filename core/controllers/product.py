@@ -29,6 +29,26 @@ def get_all_products():
         } for p in products_data
     ]
 
+@eel.expose
+def get_out_of_stock():
+    product = Product('', '', '', 0, 0)
+    products_data = product.get_out_of_stock()
+
+    return [
+        {
+            "product_id": p[0],
+            "name": p[1],
+            "sku": p[2],
+            "barcode": p[3],
+            "stock": p[4],
+            "price": p[5],
+            "description": p[6],
+            "category_id": p[7],
+            "category_name": p[8],
+            "created_at": p[9],
+            "updated_at": p[10]
+        } for p in products_data
+    ]
 
 @eel.expose
 def get_product_by_id(product_id: int):
