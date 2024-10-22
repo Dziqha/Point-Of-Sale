@@ -4,11 +4,17 @@
 
 <!-- Search Transaction -->
 <div class="mt-4 flex items-center gap-2 max-w-xl">
+  <div class="select">
+    <select id="search-type">
+      <option value="id">By id</option>
+      <option value="customer">By customer</option>
+    </select>
+  </div>
   <input
     class="input"
     type="number"
     id="search-input"
-    placeholder="Search transaction by ID"
+    placeholder="Search transaction"
   />
   <button class="button" onclick="serachTransaction()">
     <i class="fas fa-search mr-2"></i> Search
@@ -172,7 +178,7 @@
         </div>
       </div>
     </div>
-      
+
     `;
 
     openTransactionDetailsModal();
@@ -205,13 +211,14 @@
 
       let invoiceText = "=== INVOICE ===\n\n";
       invoiceText += `ID: ${currentTransactionId}\n`;
-      invoiceText += `Cashier: ${transaction.cashier_name}\n`;
+      invoiceText += `Cashier: ${transaction.user_id}-${transaction.cashier_name}\n`;
       invoiceText += `Customer: ${
         transaction.customer_id ? `${transaction.customer_phone}` : "N/A"
       }\n`;
       invoiceText += `Date: ${new Date(
         transaction.created_at
-      ).toLocaleString()}\n\n`;
+      ).toLocaleString()}\n`;
+      invoiceText += `Reprint: ${new Date().toLocaleString()}\n\n`;
       invoiceText += "Items:\n";
       invoiceText += "--------------------\n";
 
@@ -224,7 +231,7 @@
           item.price
         )}\n`;
         if (item.discount > 0) {
-          invoiceText += `   Discount: ${formatRupiahv2(item.discount)}\n`;
+          invoiceText += `   Discount: ${item.discount}%\n`;
         }
         invoiceText += `   Subtotal: ${formatRupiahv2(item.total)}\n`;
         subtotal += parseInt(item.total);
@@ -254,19 +261,44 @@
   }
 
   async function serachTransaction() {
-    const transactionId = document.getElementById("search-input").value;
+    const searchTerm = document.getElementById("search-input").value;
+    const searchType = document.getElementById("search-type").value;
 
-    if (!transactionId) {
+    if (!searchTerm) {
       loadTransactions();
       return;
     }
 
-    const result = await eel.get_transaction_by_id(parseInt(transactionId))();
+    let result;
 
-    if (result.status == "failed") {
-      errorAlert(result.message);
-    } else {
-      displayTransactions([result]);
+    switch (searchType) {
+      case "id":
+        result = await eel.get_transaction_by_id(parseInt(transactionId))();
+
+        if (result.status == "failed") {
+          errorAlert(result.message);
+          return;
+        } else {
+          displayTransactions([result]);
+        }
+        break;
+      case "customer":
+        const customer = await eel.get_customer_by_phone(searchTerm)();
+
+        if (customer.status == "failed") {
+          errorAlert(customer.message);
+          return;
+        }
+
+        result = await eel.get_transactions_by_customer(customer.customer_id)();
+
+        console.log(result);
+
+        displayTransactions(result);
+        break;
+      default:
+        errorAlert("Invalid search type.");
+        return;
     }
   }
 </script>

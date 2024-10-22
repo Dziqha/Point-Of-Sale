@@ -109,9 +109,9 @@ def get_all_transactions():
     ]
 
 @eel.expose
-def get_transactions_by_user_id(user_id: int):
+def get_transactions_by_customer(customer_id: int):
     transaction = Transaction(
-        user_id=user_id,
+        user_id=0,
         customer_id=0, 
         total=Decimal(0), 
         discount=Decimal(0), 
@@ -119,7 +119,7 @@ def get_transactions_by_user_id(user_id: int):
         paid_amount=Decimal(0), 
         return_amount=Decimal(0)
     )
-    transactions_data = transaction.get_by_user_id(user_id)
+    transactions_data = transaction.get_by_customer(customer_id)
     return [
         {
             "transaction_id": t[0],
@@ -131,7 +131,9 @@ def get_transactions_by_user_id(user_id: int):
             "paid_amount": str(t[6]),
             "return_amount": str(t[7]),
             "voucher_id": t[8],
-            "created_at": str(t[9])
+            "created_at": str(t[9]),
+            "cashier_name": t[10],
+            "customer_phone": t[11]
         } for t in transactions_data
     ]
 

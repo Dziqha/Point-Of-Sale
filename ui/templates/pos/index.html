@@ -830,7 +830,7 @@
       invoiceText += `Date: ${new Date(
         transaction.created_at
       ).toLocaleString()}\n\n`;
-      invoiceText += `Cashier: ${transaction.cashier_name}\n`;
+      invoiceText += `Cashier: ${transaction.user_id}-${transaction.cashier_name}\n`;
       invoiceText += `Customer: ${
         transaction.customer_id ? `${transaction.customer_phone}` : "N/A"
       }\n`;
@@ -846,7 +846,7 @@
           item.price
         )}\n`;
         if (item.discount > 0) {
-          invoiceText += `   Discount: ${formatRupiahv2(item.discount)}\n`;
+          invoiceText += `   Discount: ${item.discount}%\n`;
         }
         invoiceText += `   Subtotal: ${formatRupiahv2(item.total)}\n`;
         subtotal += parseInt(item.total);

@@ -118,13 +118,19 @@ class Transaction(BaseModel):
         finally:
             conn.close()
 
-    def get_by_user_id(self, user_id: int) -> List[Tuple[Any]]:
+    def get_by_customer(self, customer_id: int) -> List[Tuple[Any]]:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
             print("Database connection error.")
             return []
 
-        cursor.execute('''SELECT * FROM transactions WHERE user_id = ?''', (user_id,))
+        cursor.execute('''SELECT t.*, u.username as cashier_name, c.phone as customer_phone
+                FROM transactions t
+                LEFT JOIN users u ON t.user_id = u.user_id
+                LEFT JOIN customers c ON t.customer_id = c.customer_id
+                WHERE t.customer_id = ?
+                ORDER BY t.transaction_id DESC
+                ''', (customer_id,))
         transactions = cursor.fetchall()
         conn.close()
 
