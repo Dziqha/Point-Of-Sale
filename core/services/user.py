@@ -2,18 +2,19 @@ import jwt
 from datetime import datetime, timedelta
 from typing import Optional
 from .base_model import BaseModel
+from .person import Person
 from core.lib import db
 from core.lib.hash import verify_password
 
 SECRET_KEY = "super_duper_secret_key"
 
-class User(BaseModel):
+class User(Person, BaseModel):
     def __init__(self, username: str, password: str, role: str):
+        super().__init__(name=username)
         self.user_id: Optional[int] = None
         self.username = username
         self.password = password
         self.role = role
-        self.created_at = datetime.now()
 
     def create(self) -> str:
         conn, cursor = db.init_db()

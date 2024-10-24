@@ -1,16 +1,17 @@
 from datetime import datetime
 from typing import Optional, Tuple, Any
 from .base_model import BaseModel
+from .person import Person
 from core.lib import db
 
-class Customer(BaseModel):
+
+class Customer(Person, BaseModel):
     def __init__(self, name: str, email: str = "", phone: str = "", address: str = ""):
+        super().__init__(name=name)
         self.customer_id: Optional[int] = None
-        self.name = name
         self.email = email
         self.phone = phone
         self.address = address
-        self.created_at = datetime.now()
 
     def create(self) -> str:
         conn, cursor = db.init_db()
