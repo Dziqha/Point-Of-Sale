@@ -275,7 +275,7 @@
 
   async function getCategories() {
     categories = await eel.get_all_categories()();
-    populateCategoryDropdowns(categories);
+    populateCategoryDropdowns(categories.data);
   }
 
   function populateCategoryDropdowns(categories) {

@@ -195,7 +195,19 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     token = getCookie("jwt");
-    sessionData = await eel.get_current_session(token)();
+    if (!token) {
+      window.location.href = "../index.html";
+    }
+
+    const sessionData = await eel.get_current_session(token)();
+
+    if (
+      !sessionData.id ||
+      !sessionData.username ||
+      !sessionData.role == "admin"
+    ) {
+      window.location.href = "../index.html";
+    }
 
     const usernameElement = document.getElementById("username");
     usernameElement.textContent = sessionData.username;

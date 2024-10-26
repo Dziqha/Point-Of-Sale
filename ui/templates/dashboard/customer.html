@@ -204,7 +204,7 @@
 
   async function getCustomers() {
     const customers = await eel.get_all_customers()();
-    displayCustomers(customers);
+    displayCustomers(customers.data);
   }
 
   function displayCustomers(customers) {
@@ -253,7 +253,11 @@
     }
 
     const result = await eel.create_customer(name, email, phone, address)();
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     document.getElementById("add-customer-name").value = "";
     document.getElementById("add-customer-email").value = "";
@@ -292,7 +296,12 @@
     }
 
     const result = await eel.update_customer(id, name, email, phone, address)();
-    successAlert(result);
+
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     const modal = document.getElementById("edit-customer-modal");
     modal.classList.remove("is-active");
@@ -308,7 +317,12 @@
 
   async function confirmDeleteCustomer() {
     const result = await eel.delete_customer(customerToDelete)();
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
+
     customerToDelete = null;
     const modal = document.getElementById("delete-customer-modal");
     modal.classList.remove("is-active");
@@ -341,10 +355,11 @@
 
     console.log(result);
 
-    if (result.status == "failed") {
-      errorAlert(result.message);
+    if (result.status == "success") {
+      successAlert(result.message);
+      displayCustomers([result.data]);
     } else {
-      displayCustomers([result]);
+      errorAlert(result.message);
     }
   }
 

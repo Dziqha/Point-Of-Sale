@@ -4,59 +4,91 @@ from core.services.customer import Customer
 @eel.expose
 def create_customer(name: str, email: str = "", phone: str = "", address: str = ""):
     customer = Customer(name=name, email=email, phone=phone, address=address)
-    return customer.create() 
+    response = customer.create()
+
+    return {
+        "status": response["status"],
+        "message": response["message"],
+        "data": response.get("data")
+    }
 
 @eel.expose
 def update_customer(customer_id: int, name: str, email: str = "", phone: str = "", address: str = ""):
     customer = Customer(name=name, email=email, phone=phone, address=address)
     customer.customer_id = customer_id
-    return customer.update()
+    response = customer.update()
+
+    return {
+        "status": response["status"],
+        "message": response["message"]
+    }
 
 @eel.expose
 def delete_customer(customer_id: int):
     customer = Customer(name="")
     customer.customer_id = customer_id
-    customer.delete()
-    return f"Customer with ID {customer_id} deleted."
+    response = customer.delete()
+
+    return {
+        "status": response["status"],
+        "message": response["message"]
+    }
 
 @eel.expose
 def get_customer_by_id(customer_id: int):
     customer = Customer(name="")
-    customer_data = customer.get_by_id(customer_id)
-    if customer_data:
-        return {
-            "customer_id": customer_data[0],
-            "name": customer_data[1],
-            "email": customer_data[2],
-            "phone": customer_data[3],
-            "address": customer_data[4]
-        }
-    return {"status": "failed", "message": "Customer not found."}
+    response = customer.get_by_id(customer_id)
+
+    return {
+        "status": response["status"],
+        "message": response["message"],
+        "data": {
+            "customer_id": response["data"][0],
+            "name": response["data"][1],
+            "email": response["data"][2],
+            "phone": response["data"][3],
+            "address": response["data"][4]
+        } if response["status"] == "success" and "data" in response else None
+    }
 
 @eel.expose
 def get_customer_by_phone(customer_phone: str):
     customer = Customer(name="")
-    customer_data = customer.get_by_phone(customer_phone)
-    if customer_data:
-        return {
-            "customer_id": customer_data[0],
-            "name": customer_data[1],
-            "email": customer_data[2],
-            "phone": customer_data[3],
-            "address": customer_data[4]
-        }
-    return {"status": "failed", "message": "Customer not found."}
+    response = customer.get_by_phone(customer_phone)
+
+    return {
+        "status": response["status"],
+        "message": response["message"],
+        "data": {
+            "customer_id": response["data"][0],
+            "name": response["data"][1],
+            "email": response["data"][2],
+            "phone": response["data"][3],
+            "address": response["data"][4]
+        } if response["status"] == "success" and "data" in response else None
+    }
 
 @eel.expose
 def get_all_customers():
     customer = Customer(name="")
-    customers_data = customer.get_all()
-    return [
-        {
-            "customer_id": c[0],
-            "name": c[1],
-            "email": c[2],
-            "phone": c[3],
-            "address": c[4]
-        } for c in customers_data
-    ]
+    response = customer.get_all()
+
+    if response["status"] == "success" and "data" in response:
+        return {
+            "status": response["status"],
+            "message": response["message"],
+            "data": [
+                {
+                    "customer_id": row[0],
+                    "name": row[1],
+                    "email": row[2],
+                    "phone": row[3],
+                    "address": row[4]
+                } for row in response["data"]
+            ]
+        }
+    else:
+        return {
+            "status": response["status"],
+            "message": response["message"]
+        }

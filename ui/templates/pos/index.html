@@ -472,7 +472,12 @@
     }
 
     const result = await eel.create_customer(name, email, phone, address)();
-    successAlert(result);
+
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     document.getElementById("add-customer-name").value = "";
     document.getElementById("add-customer-email").value = "";
@@ -480,11 +485,10 @@
     document.getElementById("add-customer-address").value = "";
   }
 
-  // Add an event listener for the Enter key
   document.getElementById("search-input").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && singleResult) {
       selectProduct(singleResult);
-      singleResult = null; // Reset after selection
+      singleResult = null;
     }
   });
 
@@ -567,12 +571,14 @@
       const code = voucherInput.value.trim();
       if (code) {
         const result = await eel.get_voucher_by_code(code)();
-        const isValid = result !== "Voucher not found";
+        const isValid = result.data.voucher_id !== undefined;
         updateValidationUI(
           voucherInput,
           voucherHelp,
           isValid,
-          isValid ? "Voucher valid" : "Voucher tidak valid"
+          isValid
+            ? `${result.data.discount_value}% Discount applyed`
+            : "Invalid voucher"
         );
       } else {
         resetField(voucherInput, voucherHelp);
@@ -584,12 +590,12 @@
       const phone = document.getElementById("customer-phone").value.trim();
       if (phone) {
         const result = await eel.get_customer_by_phone(phone)();
-        const isValid = result.customer_id !== undefined;
+        const isValid = result.data.customer_id !== undefined;
         updateValidationUI(
           document.getElementById("customer-phone"),
           customerHelp,
           isValid,
-          isValid ? result.name : "No customer with that phone number"
+          isValid ? result.data.name : "No customer with that phone number"
         );
       } else {
         resetField(document.getElementById("customer-phone"), customerHelp);
@@ -656,8 +662,8 @@
     let customerId = null;
     if (customerPhone) {
       const customer = await eel.get_customer_by_phone(customerPhone)();
-      if (customer && customer.customer_id) {
-        customerId = customer.customer_id;
+      if (customer && customer.data.customer_id) {
+        customerId = customer.data.customer_id;
       }
     }
     const userId = sessionData.id;
@@ -666,9 +672,9 @@
     let voucherDiscount = 0;
     if (voucherCode) {
       const voucher = await eel.get_voucher_by_code(voucherCode)();
-      if (voucher && voucher.voucher_id) {
-        voucherId = voucher.voucher_id;
-        voucherDiscount = voucher.discount_value || 0;
+      if (voucher && voucher.data.voucher_id) {
+        voucherId = voucher.data.voucher_id;
+        voucherDiscount = voucher.data.discount_value || 0;
       }
     }
 

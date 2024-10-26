@@ -206,7 +206,7 @@
 
   async function getVouchers() {
     const vouchers = await eel.get_all_vouchers()();
-    displayVouchers(vouchers);
+    displayVouchers(vouchers.data);
   }
 
   function displayVouchers(vouchers) {
@@ -275,7 +275,11 @@
       parseInt(quota)
     )();
 
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     document.getElementById("add-voucher-code").value = "";
     document.getElementById("add-voucher-discount").value = "";
@@ -291,19 +295,26 @@
   async function editVoucher(voucherId) {
     const voucher = await eel.get_voucher_by_id(voucherId)();
 
-    document.getElementById("edit-voucher-id").value = voucher.voucher_id;
-    document.getElementById("edit-voucher-code").value = voucher.code;
-    document.getElementById("edit-voucher-discount").value =
-      voucher.discount_value;
-    document.getElementById("edit-voucher-expiration").value = new Date(
-      voucher.expiration_date
-    )
-      .toISOString()
-      .split("T")[0];
-    document.getElementById("edit-voucher-quota").value = voucher.quota;
+    console.log(voucher);
 
-    const modal = document.getElementById("edit-voucher-modal");
-    modal.classList.add("is-active");
+    if (voucher.status === "success") {
+      document.getElementById("edit-voucher-id").value =
+        voucher.data.voucher_id;
+      document.getElementById("edit-voucher-code").value = voucher.data.code;
+      document.getElementById("edit-voucher-discount").value =
+        voucher.data.discount_value;
+      document.getElementById("edit-voucher-expiration").value = new Date(
+        voucher.data.expiration_date
+      )
+        .toISOString()
+        .split("T")[0];
+      document.getElementById("edit-voucher-quota").value = voucher.data.quota;
+
+      const modal = document.getElementById("edit-voucher-modal");
+      modal.classList.add("is-active");
+    } else {
+      errorAlert(voucher.message);
+    }
   }
 
   async function updateVoucher() {
@@ -313,20 +324,30 @@
     const expiration = document.getElementById("edit-voucher-expiration").value;
     const quota = document.getElementById("edit-voucher-quota").value;
 
+    console.log("ID:", id);
+    console.log("Code:", code);
+    console.log("Discount:", discount);
+    console.log("Expiration:", expiration);
+    console.log("Quota:", quota);
+
     if (!code || !discount || !expiration || !quota) {
       errorAlert("Please fill in all required fields.");
       return;
     }
 
     const result = await eel.update_voucher(
-      parseInt(id),
+      id,
       code,
-      parseFloat(discount),
+      discount,
       expiration,
-      parseInt(quota)
+      quota
     )();
 
-    successAlert(result);
+    if (result.status === "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     const modal = document.getElementById("edit-voucher-modal");
     modal.classList.remove("is-active");
@@ -343,7 +364,11 @@
   async function confirmDeleteVoucher() {
     if (voucherToDelete) {
       const result = await eel.delete_voucher(voucherToDelete)();
-      successAlert(result);
+      if (result.status == "success") {
+        successAlert(result.message);
+      } else {
+        errorAlert(result.message);
+      }
       voucherToDelete = null;
       const modal = document.getElementById("delete-voucher-modal");
       modal.classList.remove("is-active");
@@ -412,10 +437,11 @@
         return;
     }
 
-    if (result === "Voucher not found") {
-      errorAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+      displayVouchers([result.data]);
     } else {
-      displayVouchers([result]);
+      errorAlert(result.message);
     }
   }
 </script>

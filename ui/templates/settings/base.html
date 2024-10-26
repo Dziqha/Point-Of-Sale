@@ -147,7 +147,20 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     token = getCookie("jwt");
+
+    if (!token) {
+      window.location.href = "../index.html";
+    }
+
     sessionData = await eel.get_current_session(token)();
+
+    if (
+      !sessionData.id ||
+      !sessionData.username ||
+      !sessionData.role == "superuser"
+    ) {
+      window.location.href = "../index.html";
+    }
 
     const usernameElement = document.getElementById("username");
     usernameElement.textContent = sessionData.username;
