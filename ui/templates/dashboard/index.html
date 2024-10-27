@@ -53,12 +53,14 @@
   async function getTransactionStats() {
     const stats = await eel.get_transaction_stats()();
 
+    console.log(stats);
+
     document.getElementById("today-stats").innerText =
-      stats.daily_new_transactions;
+      stats.data.daily_new_transactions;
     document.getElementById("week-stats").innerText =
-      stats.weekly_new_transactions;
+      stats.data.weekly_new_transactions;
     document.getElementById("month-stats").innerText =
-      stats.monthly_new_transactions;
+      stats.data.monthly_new_transactions;
   }
 
   function displayProducts(products) {
