@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any, Union
 from .base_model import BaseModel
 from core.lib import db
 
@@ -13,7 +13,7 @@ class StockMovement(BaseModel):
         self.reason = reason
         self.created_at = datetime.now()
 
-    def create(self):
+    def create(self) -> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
 
         cursor.execute('''INSERT INTO stock_movements (product_id, user_id, movement_type, quantity_change, reason, created_at)
@@ -38,10 +38,10 @@ class StockMovement(BaseModel):
         }
 
         if success:
-            response["movement_id"] = self.movement_id
+            response["data"] = {"movement_id": self.movement_id}
 
         return response
-    def get_all(self):
+    def get_all(self)-> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
         cursor.execute('''
             SELECT sm.*, p.name AS product_name, p.sku, u.username AS admin_username
@@ -52,9 +52,17 @@ class StockMovement(BaseModel):
         ''')
         movements = cursor.fetchall()
         conn.close()
-        return movements
+        response = {
+            "status": "success" if  movements else "failed",
+            "message": "Stock movements found" if movements else "Failed to find stock movements"
+        }
 
-    def get_by_id(self, movement_id: int):
+        if movements:
+            response["data"] = movements
+
+        return response
+
+    def get_by_id(self, movement_id: int)-> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
         cursor.execute('''
             SELECT sm.*, p.name AS product_name, p.sku, u.username AS admin_username
@@ -64,19 +72,18 @@ class StockMovement(BaseModel):
             WHERE sm.movement_id = ?
         ''', (movement_id,))
         movement = cursor.fetchone()
-        success = cursor.rowcount > 0
         conn.close()
         response = {
-            "status": "success" if success else "failed",
-            "message": "Stock movement found" if success else "Failed to find stock movement"
+            "status": "success" if movement else "failed",
+            "message": "Stock movement found" if movement else "Failed to find stock movement"
         }
 
-        if success:
-            response["movement"] = movement
+        if movement:
+            response["data"] = movement
 
         return response
 
-    def update(self):
+    def update(self)-> Dict[str, Union[str, Any]]:
         if self.movement_id is None:
             raise ValueError("Movement ID is required to update a stock movement.")
         
@@ -95,11 +102,9 @@ class StockMovement(BaseModel):
             "status": "success" if success else "failed",
             "message": "Stock movement updated successfully." if success else "Failed to update stock movement."
         }
-        if success:
-            response["movement_id"] = self.movement_id
         
         return response
-    def delete(self):
+    def delete(self)-> Dict[str, Union[str, Any]]:
         if self.movement_id is None:
             raise ValueError("Movement ID is required to delete a stock movement.")
         
@@ -113,11 +118,9 @@ class StockMovement(BaseModel):
             "status": "success" if success else "failed",
             "message": "Stock movement deleted successfully." if success else "Failed to delete stock movement."
         }
-        if success:
-            response["movement_id"] = self.movement_id
         
         return response
-    def get_by_product_id(self, product_id: int):
+    def get_by_product_id(self, product_id: int)-> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
         cursor.execute('''
             SELECT sm.*, p.name AS product_name, p.sku, u.username AS admin_username
@@ -128,15 +131,14 @@ class StockMovement(BaseModel):
             ORDER BY sm.movement_id DESC
         ''', (product_id,))
         movements = cursor.fetchall()
-        success = cursor.rowcount > 0
         conn.close()
 
         response = {
-            "status": "success" if success else "failed",
-            "message": "Stock movements found" if success else "Failed to find stock movements"
+            "status": "success" if movements else "failed",
+            "message": "Stock movements found" if movements else "Failed to find stock movements"
         }
 
-        if success:
-            response["movements"] = movements
+        if movements:
+            response["data"] = movements
 
         return response

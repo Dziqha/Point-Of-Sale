@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List, Tuple, Any
+from typing import Optional, Dict, Any, Union
 from .base_model import BaseModel
 from core.lib import db
 
@@ -15,7 +15,7 @@ class Promo(BaseModel):
         self.end_date = end_date
         self.created_at = datetime.now()
 
-    def create(self):
+    def create(self)-> Dict[str, Union[str, Any]]:
         con, cursor = db.init_db()
 
         cursor.execute('''
@@ -48,7 +48,7 @@ class Promo(BaseModel):
         return response
 
 
-    def update(self) -> str:
+    def update(self) -> Dict[str, Union[str, Any]]:
         if self.promo_id is None:
             return "Promo ID is not set."
 
@@ -68,14 +68,10 @@ class Promo(BaseModel):
             "status": "success" if success else "error",
             "message": "Promo updated" if success else "Failed to update promo"
         }
-        if success:
-            response["data"] = {
-                "promo_id": self.promo_id
-            }
 
         return response
         
-    def delete(self) -> str:
+    def delete(self) -> Dict[str, Union[str, Any]]:
         if self.promo_id is None:
             return "Promo ID is not set."
 
@@ -94,7 +90,7 @@ class Promo(BaseModel):
         }
 
         return response
-    def get_by_id(self, id: int) -> Optional[Tuple[Any]]:
+    def get_by_id(self, id: int) -> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
             print("Database connection error.")
@@ -109,28 +105,18 @@ class Promo(BaseModel):
             WHERE promo.promo_id = ?
         ''', (id,))
         promo = cursor.fetchone()
-        success = cursor.rowcount > 0
         conn.close()
         response = {
-            "status": "success" if success else "failed",
-            "message": "Promo found" if success else "Failed to find promo"
+            "status": "success" if promo else "failed",
+            "message": "Promo found" if promo else "Failed to find promo"
         }
         
-        if success:
-            response["data"] = {
-                "promo_id": promo[0],
-                "product_id": promo[1],
-                "name": promo[2],
-                "description": promo[3],
-                "discount_percentage": promo[4],
-                "start_date": promo[5],
-                "end_date": promo[6],
-                "product_name": promo[7]
-            }
+        if promo:
+            response["data"] = promo
 
         return response
 
-    def get_all(self) -> List[Tuple[Any]]:
+    def get_all(self) -> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
             print("Database connection error.")
@@ -145,30 +131,18 @@ class Promo(BaseModel):
             ORDER BY promo.promo_id DESC
         ''')
         promos = cursor.fetchall()
-        success = cursor.rowcount > 0
         conn.close()
         response = {
-            "status": "success" if success else "failed",
-            "message": "Promos found" if success else "Failed to find promos"
+            "status": "success" if promos else "failed",
+            "message": "Promos found" if promos else "Failed to find promos"
         }
         
-        if success:
-            response["data"] = []
-            for promo in promos:
-                response["data"].append({
-                    "promo_id": promo[0],
-                    "product_id": promo[1],
-                    "name": promo[2],
-                    "description": promo[3],
-                    "discount_percentage": promo[4],
-                    "start_date": promo[5],
-                    "end_date": promo[6],
-                    "product_name": promo[7]
-                })
+        if promos:
+            response["data"] = promos
 
         return response
 
-    def get_active_product_promo(self, product_id: int) -> Optional[Tuple[Any]]:
+    def get_active_product_promo(self, product_id: int) -> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
 
         now = datetime.now()
@@ -184,28 +158,18 @@ class Promo(BaseModel):
         ''', (product_id, now, now))
 
         active_promo = cursor.fetchone()
-        success = cursor.rowcount > 0
         conn.close()
         response = {
-            "status": "success" if success else "failed",
-            "message": "Promo found" if success else "Failed to find promo"
+            "status": "success" if active_promo else "failed",
+            "message": "Promo found" if active_promo else "Failed to find promo"
         }
         
-        if success:
-            response["data"] = {
-                "promo_id": active_promo[0],
-                "product_id": active_promo[1],
-                "name": active_promo[2],
-                "description": active_promo[3],
-                "discount_percentage": active_promo[4],
-                "start_date": active_promo[5],
-                "end_date": active_promo[6],
-                "product_name": active_promo[7]
-            }
+        if active_promo:
+            response["data"] = active_promo
 
         return response
     
-    def get_by_name(self, name: str) -> Optional[Tuple[Any]]:
+    def get_by_name(self, name: str) -> Dict[str, Union[str, Any]]:
         conn, cursor = db.init_db()
         if conn is None or cursor is None:
             print("Database connection error.")
@@ -221,25 +185,12 @@ class Promo(BaseModel):
             ORDER BY promo.promo_id DESC
         ''', (f'%{name}%',))
         promo = cursor.fetchall()
-        success = cursor.rowcount > 0
         conn.close()
         response = {
-            "status": "success" if success else "failed",
-            "message": "Promo found" if success else "Failed to find promo"
+            "status": "success" if promo else "failed",
+            "message": "Promo found" if promo else "Failed to find promo"
         }
         
-        if success:
-            response["data"] = []
-            for promo in promo:
-                response["data"].append({
-                    "promo_id": promo[0],
-                    "product_id": promo[1],
-                    "name": promo[2],
-                    "description": promo[3],
-                    "discount_percentage": promo[4],
-                    "start_date": promo[5],
-                    "end_date": promo[6],
-                    "product_name": promo[7]
-                })
-
+        if promo:
+            response["data"] = promo
         return response

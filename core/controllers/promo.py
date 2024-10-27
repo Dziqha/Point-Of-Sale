@@ -70,22 +70,30 @@ def get_promo_by_id(promo_id: int):
 def get_all_promos():
     promo = Promo()
     response = promo.get_all()
-    return {
-        "status": response["status"],
-        "message": response["message"],
-        "data": [
-            {
-                "promo_id": p[0],
-                "product_id": p[1],
-                "name": p[2],
-                "description": p[3],
-                "discount_percentage": str(p[4]),
-                "start_date": p[5],
-                "end_date": p[6],
-                "product_name": p[7]
-            } for p in response["data"]
-        ]
-    }
+
+    if response["status"] == "success" and "data" in response:
+        return {
+            "status": response["status"],
+            "message": response["message"],
+            "data": [
+                {
+                    "promo_id": row[0],
+                    "product_id": row[1],
+                    "name": row[2],
+                    "description": row[3],
+                    "discount_percentage": str(row[4]),
+                    "start_date": row[5],
+                    "end_date": row[6],
+                    "product_name": row[7]
+                }
+                for row in response["data"]
+            ]
+        }
+    else:
+        return {
+            "status": response["status"],
+            "message": response["message"]
+        }
 
 @eel.expose
 def get_active_product_promo(product_id: int):
