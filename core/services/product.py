@@ -1,179 +1,204 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Tuple, Any
 from .base_model import BaseModel
 from core.lib import db
 
 class Product(BaseModel):
-    def __init__(self, name: str, sku: str, barcode: str, category_id: int, price: int, description: str = ""):
+    def __init__(self, name: str, sku: str, barcode: str, category_id: int, price: float, description: str = ""):
         self.product_id: Optional[int] = None
         self.name = name
         self.sku = sku
         self.barcode = barcode
         self.category_id = category_id
-        self.stock = 0
         self.price = price
         self.description = description
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
 
-    def create(self) -> str:
+    def create(self) -> dict:
         conn, cursor = db.init_db()
-        cursor.execute('''INSERT INTO products (name, sku, barcode, category_id, stock, price, description, created_at, updated_at) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
-                       (self.name, self.sku, self.barcode, self.category_id, self.stock, self.price, self.description, self.created_at, self.updated_at))
-        conn.commit()
-        conn.close()
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
 
-        if cursor.rowcount > 0:
-            return f"Product '{self.name}' created successfully."
-        else:
-            return f"Failed to create product '{self.name}'."
+        try:
+            cursor.execute('''INSERT INTO products (name, sku, barcode, category_id, price, description, created_at, updated_at) 
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+                       (self.name, self.sku, self.barcode, self.category_id, self.price, self.description, self.created_at, self.updated_at))
+            conn.commit()
+            if cursor.rowcount > 0:
+                self.product_id = cursor.lastrowid
+                return {
+                    "status": "success",
+                    "message": f"Product {self.name} saved to database.",
+                    "data": {"product_id": self.product_id}
+                }
+            else:
+                return {"status": "error", "message": "Failed to save product."}
+        except Exception as e:
+            return {"status": "error", "message": f"Error creating product: {str(e)}"}
+        finally:
+            conn.close()
 
-    def get_all(self):
-        conn, cursor = db.init_db()
-        cursor.execute('''
-        SELECT 
-            products.product_id, 
-            products.name AS product_name, 
-            products.sku, 
-            products.barcode, 
-            products.stock, 
-            products.price, 
-            products.description,
-            products.category_id,
-            categories.name AS category_name, 
-            products.created_at, 
-            products.updated_at
-        FROM products
-        LEFT JOIN categories ON products.category_id = categories.category_id
-        ''')
-        products = cursor.fetchall()
-        conn.close()
-        return products
-
-    def get_out_of_stock(self):
-        conn, cursor = db.init_db()
-        cursor.execute('''
-        SELECT 
-            products.product_id, 
-            products.name AS product_name, 
-            products.sku, 
-            products.barcode, 
-            products.stock, 
-            products.price, 
-            products.description,
-            products.category_id,
-            categories.name AS category_name, 
-            products.created_at, 
-            products.updated_at
-        FROM products
-        LEFT JOIN categories ON products.category_id = categories.category_id
-        WHERE stock = 0
-        ''')
-        products = cursor.fetchall()
-        conn.close()
-        return products
-
-    def get_by_id(self, product_id: int):
-        conn, cursor = db.init_db()
-        cursor.execute('''
-        SELECT 
-            products.product_id, 
-            products.name AS product_name, 
-            products.sku, 
-            products.barcode, 
-            products.stock, 
-            products.price, 
-            products.description, 
-            products.category_id, 
-            categories.name AS category_name, 
-            products.created_at, 
-            products.updated_at
-        FROM products
-        LEFT JOIN categories ON products.category_id = categories.category_id
-        WHERE products.product_id = ?
-        ''', (product_id,))
-        product = cursor.fetchone()
-        conn.close()
-        return product
-
-    def update(self) -> str:
+    def update(self) -> dict:
         if self.product_id is None:
-            raise ValueError("Product ID is required to update a product.")
-
-        self.updated_at = datetime.now()
+            return {"status": "error", "message": "Product ID is not set."}
 
         conn, cursor = db.init_db()
-        cursor.execute('''UPDATE products SET name = ?, sku = ?, barcode = ?, category_id = ?, price = ?, description = ?, updated_at = ? 
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
+
+        try:
+            self.updated_at = datetime.now()
+            cursor.execute('''UPDATE products 
+                          SET name = ?, sku = ?, barcode = ?, category_id = ?, 
+                          stock = ?, price = ?, description = ?, updated_at = ? 
                           WHERE product_id = ?''', 
-                       (self.name, self.sku, self.barcode, self.category_id, self.price, self.description, self.updated_at, self.product_id))
-        conn.commit()
-        affected_rows = cursor.rowcount
-        conn.close()
+                       (self.name, self.sku, self.barcode, self.category_id, 
+                        self.stock, self.price, self.description, 
+                        self.updated_at, self.product_id))
+            conn.commit()
+            if cursor.rowcount > 0:
+                return {"status": "success", "message": f"Product with ID {self.product_id} updated in database."}
+            else:
+                return {"status": "error", "message": "Failed to update product."}
+        except Exception as e:
+            return {"status": "error", "message": f"Error updating product: {str(e)}"}
+        finally:
+            conn.close()
 
-        if affected_rows > 0:
-            return f"Product '{self.name}' updated successfully."
-        else:
-            return f"Failed to update product '{self.name}' or no changes were made."
-
-    def delete(self) -> str:
+    def delete(self) -> dict:
         if self.product_id is None:
-            raise ValueError("Product ID is required to delete a product.")
+            return {"status": "error", "message": "Product ID is not set."}
 
         conn, cursor = db.init_db()
-        cursor.execute('''DELETE FROM products WHERE product_id = ?''', (self.product_id,))
-        conn.commit()
-        affected_rows = cursor.rowcount
-        conn.close()
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
 
-        if affected_rows > 0:
-            return f"Product '{self.name}' deleted successfully."
-        else:
-            return f"Failed to delete product '{self.name}' or product does not exist."
+        try:
+            cursor.execute('''DELETE FROM products WHERE product_id = ?''', (self.product_id,))
+            conn.commit()
+            if cursor.rowcount > 0:
+                return {"status": "success", "message": f"Product with ID {self.product_id} deleted from database."}
+            else:
+                return {"status": "error", "message": "Failed to delete product."}
+        except Exception as e:
+            return {"status": "error", "message": f"Error deleting product: {str(e)}"}
+        finally:
+            conn.close()
 
-    def search_by_name(self, name: str):
+    def get_by_id(self, id: int) -> dict:
         conn, cursor = db.init_db()
-        cursor.execute('''
-        SELECT 
-            products.product_id, 
-            products.name AS product_name, 
-            products.sku, 
-            products.barcode, 
-            products.stock, 
-            products.price, 
-            products.description, 
-            products.category_id, 
-            categories.name AS category_name, 
-            products.created_at, 
-            products.updated_at
-        FROM products
-        LEFT JOIN categories ON products.category_id = categories.category_id
-        WHERE products.name LIKE ?
-        ''', (f'%{name}%',))
-        products = cursor.fetchall()
-        conn.close()
-        return products
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
 
-    def search_by_barcode(self, barcode: str):
+        try:
+            cursor.execute('''
+                SELECT p.*, c.name as category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                WHERE p.product_id = ?
+            ''', (id,))
+            product = cursor.fetchone()
+            
+            if product:
+                return {
+                    "status": "success",
+                    "message": "Product found.",
+                    "data": product
+                }
+            return {"status": "error", "message": "Product not found."}
+        except Exception as e:
+            return {"status": "error", "message": f"Error retrieving product: {str(e)}"}
+        finally:
+            conn.close()
+
+    def get_all(self) -> dict:
         conn, cursor = db.init_db()
-        cursor.execute('''
-        SELECT 
-            products.product_id, 
-            products.name AS product_name, 
-            products.sku, 
-            products.barcode, 
-            products.stock, 
-            products.price, 
-            products.description, 
-            products.category_id, 
-            categories.name AS category_name, 
-            products.created_at, 
-            products.updated_at
-        FROM products
-        LEFT JOIN categories ON products.category_id = categories.category_id
-        WHERE products.barcode LIKE ?
-        ''', (f'{barcode}%',))
-        product = cursor.fetchall()
-        conn.close()
-        return product
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
 
+        try:
+            cursor.execute('''
+                SELECT p.*, c.name as category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.category_id
+            ''')
+            products = cursor.fetchall()
+            return {
+                "status": "success",
+                "message": "Products retrieved successfully.",
+                "data": products
+            }
+        except Exception as e:
+            return {"status": "error", "message": f"Error retrieving products: {str(e)}"}
+        finally:
+            conn.close()
+
+    def get_out_of_stock(self) -> dict:
+        conn, cursor = db.init_db()
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
+
+        try:
+            cursor.execute('''
+                SELECT p.*, c.name as category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                WHERE p.stock <= 0
+            ''')
+            products = cursor.fetchall()
+            return {
+                "status": "success",
+                "message": "Out of stock products retrieved successfully.",
+                "data": products
+            }
+        except Exception as e:
+            return {"status": "error", "message": f"Error retrieving out of stock products: {str(e)}"}
+        finally:
+            conn.close()
+
+    def search_by_name(self, name: str) -> dict:
+        conn, cursor = db.init_db()
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
+
+        try:
+            cursor.execute('''
+                SELECT p.*, c.name as category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                WHERE p.name LIKE ?
+            ''', (f'%{name}%',))
+            products = cursor.fetchall()
+            return {
+                "status": "success",
+                "message": "Products search completed.",
+                "data": products
+            }
+        except Exception as e:
+            return {"status": "error", "message": f"Error searching products: {str(e)}"}
+        finally:
+            conn.close()
+
+    def search_by_barcode(self, barcode: str) -> dict:
+        conn, cursor = db.init_db()
+        if conn is None or cursor is None:
+            return {"status": "error", "message": "Database connection error."}
+
+        try:
+            cursor.execute('''
+                SELECT p.*, c.name as category_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                WHERE p.barcode LIKE ?
+            ''', (f'%{barcode}%',))
+            products = cursor.fetchall()
+            return {
+                "status": "success",
+                "message": "Products search completed.",
+                "data": products
+            }
+        except Exception as e:
+            return {"status": "error", "message": f"Error searching products: {str(e)}"}
+        finally:
+            conn.close()

@@ -291,7 +291,11 @@
     }
 
     const products = await eel.search_products_by_name(searchTerm)();
-    displaySearchResults(products, resultsContainer, selectProductForPromo);
+    displaySearchResults(
+      products.data,
+      resultsContainer,
+      selectProductForPromo
+    );
   }
 
   function displaySearchResults(products, resultsContainer, onSelectCallback) {

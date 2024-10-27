@@ -47,13 +47,15 @@
 <script type="text/javascript">
   async function getProducts() {
     const products = await eel.get_out_of_stock()();
-    displayProducts(products);
+    if (products.status == "success") {
+      displayProducts(products.data);
+    } else {
+      errorAlert(products.message);
+    }
   }
 
   async function getTransactionStats() {
     const stats = await eel.get_transaction_stats()();
-
-    console.log(stats);
 
     document.getElementById("today-stats").innerText =
       stats.data.daily_new_transactions;

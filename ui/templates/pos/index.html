@@ -214,7 +214,7 @@
 <script>
   let cart = [];
   let debounceTimer;
-  let singleResult = null; // To track if there is only one result
+  let singleResult = null;
 
   function handleSearchInput() {
     clearTimeout(debounceTimer);
@@ -234,20 +234,22 @@
       return;
     }
 
-    let result;
+    let response;
 
     if (searchType === "name") {
-      result = await eel.search_products_by_name(searchTerm)();
+      response = await eel.search_products_by_name(searchTerm)();
     } else if (searchType === "barcode") {
-      result = await eel.search_product_by_barcode(searchTerm)();
+      response = await eel.search_product_by_barcode(searchTerm)();
     }
+
+    const result = response.data;
 
     if (Array.isArray(result) && result.length > 0) {
       displaySearchResults(result);
       if (result.length === 1) {
-        singleResult = result[0]; // Track the single result
+        singleResult = result[0];
       } else {
-        singleResult = null; // Reset if more than one result
+        singleResult = null;
       }
     } else {
       hideSearchResults();
@@ -285,10 +287,10 @@
   }
 
   async function addToCart(product) {
-    // Get product details by ID
-    const productDetails = await eel.get_product_by_id(product.product_id)();
+    const productResponse = await eel.get_product_by_id(product.product_id)();
 
-    // Check if the product exists
+    const productDetails = productResponse.data;
+
     if (
       typeof productDetails === "string" &&
       productDetails === "Product not found"
@@ -303,8 +305,12 @@
     )();
     let discountPercentage = 0;
 
-    if (activePromo !== "No active promotion found for this product.") {
-      discountPercentage = activePromo.discount_percentage;
+    if (
+      activePromo.status === "success" &&
+      activePromo.data &&
+      activePromo.data.discount_percentage
+    ) {
+      discountPercentage = activePromo.data.discount_percentage;
     }
 
     const existingItem = cart.find(

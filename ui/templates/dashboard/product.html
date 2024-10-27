@@ -270,7 +270,11 @@
 
   async function getProducts() {
     const products = await eel.get_all_products()();
-    displayProducts(products);
+    if (products.status == "success") {
+      displayProducts(products.data);
+    } else {
+      errorAlert(products.message);
+    }
   }
 
   async function getCategories() {
@@ -337,7 +341,14 @@
   }
 
   async function showProductDetails(productId) {
-    const product = await eel.get_product_by_id(productId)();
+    const productResponse = await eel.get_product_by_id(productId)();
+    if (productResponse.status == "error") {
+      errorAlert(productResponse.message);
+      return;
+    }
+
+    const product = productResponse.data;
+
     const detailsContent = document.getElementById("product-details-content");
     detailsContent.innerHTML = `
       <div class="field">
@@ -407,7 +418,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="label">Stock</label>
+        <label class="label">Updated at</label>
         <div class="control">
           <input class="input" type="text" value="${
             product.updated_at
@@ -448,7 +459,11 @@
       description
     )();
 
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     document.getElementById("add-product-name").value = "";
     document.getElementById("add-product-sku").value = "";
@@ -461,7 +476,14 @@
   }
 
   async function editProduct(productId) {
-    const product = await eel.get_product_by_id(productId)();
+    const productResponse = await eel.get_product_by_id(productId)();
+
+    if (productResponse.status == "error") {
+      errorAlert(productResponse.message);
+      return;
+    }
+
+    const product = productResponse.data;
 
     document.getElementById("edit-product-id").value = product.product_id;
     document.getElementById("edit-product-name").value = product.name;
@@ -504,7 +526,11 @@
       description
     )();
 
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     const modal = document.getElementById("edit-product-modal");
     modal.classList.remove("is-active");
@@ -521,7 +547,11 @@
   async function confirmDeleteProduct() {
     if (productToDelete) {
       const result = await eel.delete_product(productToDelete)();
-      successAlert(result);
+      if (result.status == "success") {
+        successAlert(result.message);
+      } else {
+        errorAlert(result.message);
+      }
       productToDelete = null;
       const modal = document.getElementById("delete-product-modal");
       modal.classList.remove("is-active");
@@ -547,10 +577,10 @@
         return;
     }
 
-    if (result.length === 0) {
-      errorAlert("No products found.");
+    if (result.status == "success") {
+      displayProducts(result.data);
     } else {
-      displayProducts(result);
+      errorAlert(result.message);
     }
   }
 
