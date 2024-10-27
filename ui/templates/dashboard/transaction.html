@@ -28,7 +28,6 @@
         <th>ID</th>
         <th>Cashier</th>
         <th>Customer</th>
-        <th>Total</th>
         <th>Created At</th>
         <th>Action</th>
       </tr>
@@ -59,7 +58,6 @@
           <tr>
             <th>Product</th>
             <th>Quantity</th>
-            <th>Price</th>
             <th>Discount</th>
             <th>Total</th>
           </tr>
@@ -88,7 +86,7 @@
 
   async function loadTransactions() {
     const transactions = await eel.get_all_transactions()();
-    displayTransactions(transactions);
+    displayTransactions(transactions.data);
   }
 
   function displayTransactions(transactions) {
@@ -101,7 +99,6 @@
         <td>${transaction.transaction_id}</td>
         <td>${transaction.user_id} - ${transaction.cashier_name}</td>
         <td>${transaction.customer_phone || "N/A"}</td>
-        <td>Rp. ${inputToRupiah(transaction.final_total)}</td>
         <td>${new Date(transaction.created_at).toLocaleString()}</td>
         <td>
           <button class="button is-small is-info" onclick="viewTransactionDetails(${
@@ -117,18 +114,62 @@
 
   async function viewTransactionDetails(transactionId) {
     currentTransactionId = transactionId;
-    const transaction = await eel.get_transaction_by_id(transactionId)();
-    const cartItems = await eel.get_all_transaction_items_by_transaction_id(
+    const transactionResponse = await eel.get_transaction_by_id(
       transactionId
     )();
+    const cartItemsResponse =
+      await eel.get_all_transaction_items_by_transaction_id(transactionId)();
+
+    const transaction = transactionResponse.data;
+    const cartItems = cartItemsResponse.data;
+    let voucherData;
+
+    if (transaction.voucher_id != null) {
+      voucherData = await eel.get_voucher_by_id(transaction.voucher_id)();
+      console.log(voucherData);
+    }
+
+    let subtotal = 0;
+    if (Array.isArray(cartItems)) {
+      cartItems.forEach((item) => {
+        const price = item.price || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        const discountPercentage = parseFloat(item.discount) || 0;
+
+        const totalPrice = price * quantity;
+
+        const discountAmount = (discountPercentage / 100) * totalPrice;
+
+        subtotal += totalPrice - discountAmount;
+      });
+    }
+
+    const discountPercentage =
+      voucherData && voucherData.data
+        ? parseFloat(voucherData.data.discount_value)
+        : 0;
+    const discountAmount = (subtotal * discountPercentage) / 100;
+    const finalTotal = subtotal - discountAmount;
+
+    const taxRate = 0.1;
+    const taxAmount = finalTotal * taxRate;
+    const totalWithTax = finalTotal + taxAmount;
+
+    const paidAmount = parseFloat(transaction.paid_amount) || 0;
+    const returnAmount =
+      paidAmount > totalWithTax ? paidAmount - totalWithTax : 0;
 
     const detailsContent = document.getElementById(
       "transaction-details-content"
     );
     detailsContent.innerHTML = `
       <p><strong>Transaction ID:</strong> ${transaction.transaction_id}</p>
-      <p><strong>Cashier:</strong> ${transaction.cashier_name}</p>
-      <p><strong>Customer:</strong> ${transaction.customer_phone || "N/A"}</p>
+      <p><strong>Cashier:</strong> ${transaction.user_id} - ${
+      transaction.cashier_name
+    }</p>
+      <p><strong>Customer:</strong> ${
+        transaction.customer_id ? `${transaction.customer_phone}` : "N/A"
+      }</p>
       <p><strong>Created At:</strong> ${new Date(
         transaction.created_at
       ).toLocaleString()}</p>
@@ -138,13 +179,26 @@
     cartItemsTableBody.innerHTML = "";
 
     cartItems.forEach((item) => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 0;
+      const itemDiscountPercentage = parseFloat(item.discount) || 0;
+
+      // Calculate total price before discount
+      const totalPrice = price * quantity;
+
+      // Calculate discount amount based on percentage
+      const itemDiscount = (itemDiscountPercentage / 100) * totalPrice;
+
+      // Calculate item total after discount
+      const itemTotal = totalPrice - itemDiscount;
+
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${item.product_name} ${item.sku ? `(${item.sku})` : ""}</td>
-        <td>${item.quantity}</td>
-        <td>Rp. ${inputToRupiah(item.price)}</td>
-        <td>${inputToRupiah(item.discount)}%</td>
-        <td>Rp. ${inputToRupiah(item.total)}</td>
+        <td>${quantity}</td>
+        <td>${formatRupiahv2(price)}</td>
+        <td>${formatRupiahv2(itemDiscount)}</td>
+        <td>${formatRupiahv2(itemTotal)}</td>
       `;
       cartItemsTableBody.appendChild(row);
     });
@@ -154,31 +208,34 @@
     <div class="flex">
       <div class="w-1/3"></div>
       <div class="w-2/3">
-        <div class="text-right mr-8">
-          <div class="flex justify-between">
-            <span><strong>Subtotal:</strong></span>
-            <span>Rp. ${inputToRupiah(transaction.total)}</span>
+          <div class="text-right mr-8">
+              <div class="flex justify-between">
+                  <span><strong>Subtotal:</strong></span>
+                  <span>${formatRupiahv2(subtotal)}</span>
+              </div>
+              <div class="flex justify-between">
+                  <span><strong>Voucher:</strong></span>
+                  <span>${discountPercentage}%</span>
+              </div>
+              <div class="flex justify-between">
+                  <span><strong>Tax (10%):</strong></span>
+                  <span>${formatRupiahv2(taxAmount)}</span>
+              </div>
+              <div class="flex justify-between font-bold text-xl">
+                  <span><strong>Total:</strong></span>
+                  <span>${formatRupiahv2(totalWithTax)}</span>
+              </div>
+              <div class="flex justify-between mt-4">
+                  <span><strong>Paid Amount:</strong></span>
+                  <span>${formatRupiahv2(paidAmount)}</span>
+              </div>
+              <div class="flex justify-between">
+                  <span><strong>Return Amount:</strong></span>
+                  <span>${formatRupiahv2(returnAmount)}</span>
+              </div>
           </div>
-          <div class="flex justify-between">
-            <span><strong>Voucher:</strong></span>
-            <span>${transaction.discount}%</span>
-          </div>
-          <div class="flex justify-between font-bold text-xl">
-            <span><strong>Total:</strong></span>
-            <span>Rp. ${inputToRupiah(transaction.final_total)}</span>
-          </div>
-          <div class="flex justify-between mt-4">
-            <span><strong>Paid Amount:</strong></span>
-            <span>Rp. ${inputToRupiah(transaction.paid_amount)}</span>
-          </div>
-          <div class="flex justify-between">
-            <span><strong>Return Amount:</strong></span>
-            <span>Rp. ${inputToRupiah(transaction.return_amount)}</span>
-          </div>
-        </div>
       </div>
     </div>
-
     `;
 
     openTransactionDetailsModal();
@@ -196,67 +253,142 @@
 
   async function printInvoice() {
     if (!currentTransactionId) {
-      console.error("No transaction selected");
+      errorAlert("Transaction not selected");
       return;
     }
 
     try {
-      const transaction = await eel.get_transaction_by_id(
+      const transactionResponse = await eel.get_transaction_by_id(
         currentTransactionId
       )();
-      const transactionItems =
+      const cartItemsResponse =
         await eel.get_all_transaction_items_by_transaction_id(
           currentTransactionId
         )();
 
+      if (!transactionResponse || !cartItemsResponse) {
+        throw new Error("Failed to retrieve transaction details");
+      }
+
+      const transaction = transactionResponse.data;
+      const cartItems = cartItemsResponse.data;
+      let voucherData;
+
+      // Get voucher data if exists
+      if (transaction.voucher_id) {
+        voucherData = await eel.get_voucher_by_id(transaction.voucher_id)();
+      }
+
+      // Calculate subtotal and other amounts
+      let subtotal = 0;
+      if (Array.isArray(cartItems)) {
+        cartItems.forEach((item) => {
+          const price = parseFloat(item.price) || 0;
+          const quantity = parseInt(item.quantity) || 0;
+          const discountPercentage = parseFloat(item.discount) || 0;
+          const totalPrice = price * quantity;
+          const discountAmount = (discountPercentage / 100) * totalPrice;
+          subtotal += totalPrice - discountAmount;
+        });
+      }
+
+      const discountPercentage =
+        voucherData && voucherData.data
+          ? parseFloat(voucherData.data.discount_value)
+          : 0;
+      const discountAmount = (subtotal * discountPercentage) / 100;
+      const finalTotal = subtotal - discountAmount;
+      const taxAmount = finalTotal * 0.1; // 10% tax
+      const totalWithTax = finalTotal + taxAmount;
+      const paidAmount = parseFloat(transaction.paid_amount) || 0;
+      const returnAmount =
+        paidAmount > totalWithTax ? paidAmount - totalWithTax : 0;
+
       let invoiceText = "=== INVOICE ===\n\n";
-      invoiceText += `ID: ${currentTransactionId}\n`;
+      invoiceText += `ID: ${transaction.transaction_id}\n`;
+      invoiceText += `Date: ${new Date(transaction.created_at).toLocaleString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      )}\n`;
       invoiceText += `Cashier: ${transaction.user_id}-${transaction.cashier_name}\n`;
       invoiceText += `Customer: ${
         transaction.customer_id ? `${transaction.customer_phone}` : "N/A"
-      }\n`;
-      invoiceText += `Date: ${new Date(
-        transaction.created_at
-      ).toLocaleString()}\n`;
-      invoiceText += `Reprint: ${new Date().toLocaleString()}\n\n`;
-      invoiceText += "Items:\n";
-      invoiceText += "--------------------\n";
+      }\n\n`;
 
-      let subtotal = 0;
-      for (const item of transactionItems) {
-        const productDisplay = item.sku
-          ? `${item.product_name} (${item.sku})`
-          : item.product_name;
-        invoiceText += `${item.quantity}x ${productDisplay} @ ${formatRupiahv2(
-          item.price
-        )}\n`;
-        if (item.discount > 0) {
-          invoiceText += `   Discount: ${item.discount}%\n`;
-        }
-        invoiceText += `   Subtotal: ${formatRupiahv2(item.total)}\n`;
-        subtotal += parseInt(item.total);
+      // Add items
+      if (Array.isArray(cartItems)) {
+        cartItems.forEach((item) => {
+          const price = parseFloat(item.price) || 0;
+          const quantity = parseInt(item.quantity) || 0;
+          const discountPercentage = parseFloat(item.discount) || 0;
+          const totalPrice = price * quantity;
+          const itemDiscount = (discountPercentage / 100) * totalPrice;
+          const itemTotal = totalPrice - itemDiscount;
+
+          invoiceText += `${item.product_name}${
+            item.sku ? ` (${item.sku})` : ""
+          }\n`;
+          invoiceText += `  ${quantity} x ${formatRupiahv2(
+            price
+          )} = ${formatRupiahv2(totalPrice)}\n`;
+          if (discountPercentage > 0) {
+            invoiceText += `  Discount (${discountPercentage}%): -${formatRupiahv2(
+              itemDiscount
+            )}\n`;
+          }
+          invoiceText += `  Item Total: ${formatRupiahv2(itemTotal)}\n`;
+        });
       }
 
-      invoiceText += "--------------------\n";
-      invoiceText += `Subtotal : ${formatRupiahv2(subtotal)}\n`;
-      invoiceText += `Tax (10%): ${formatRupiahv2(subtotal * 0.1)}\n`;
-      invoiceText += `Voucher  : ${transaction.discount}%\n`;
-      invoiceText += `Total    : ${formatRupiahv2(
-        transaction.final_total
-      )}\n\n`;
-      invoiceText += `Paid     : ${formatRupiahv2(transaction.paid_amount)}\n`;
-      invoiceText += `Return   : ${formatRupiahv2(
-        transaction.return_amount
-      )}\n\n`;
-      invoiceText += "Thank you for your purchase!";
+      // Add totals
+      invoiceText += `\nSubtotal     : ${formatRupiahv2(subtotal)}\n`;
+      if (discountPercentage > 0) {
+        invoiceText += `Voucher (${discountPercentage}%): -${formatRupiahv2(
+          discountAmount
+        )}\n`;
+      }
+      invoiceText += `Tax (10%)    : ${formatRupiahv2(taxAmount)}\n`;
+      invoiceText += `Total        : ${formatRupiahv2(totalWithTax)}\n\n`;
+      invoiceText += `Paid Amount  : ${formatRupiahv2(paidAmount)}\n`;
+      invoiceText += `Return       : ${formatRupiahv2(returnAmount)}\n\n`;
+      invoiceText += "Thank you for your purchase!\n";
 
+      // Open print window
       const printWindow = window.open("", "_blank");
-      printWindow.document.write("<pre>" + invoiceText + "</pre>");
+      printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Invoice #${transaction.transaction_id}</title>
+                    <style>
+                        pre {
+                            font-family: monospace;
+                            white-space: pre;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        @media print {
+                            body { margin: 0; }
+                            pre { margin: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <pre>${invoiceText}</pre>
+                </body>
+            </html>
+        `);
       printWindow.document.close();
       printWindow.print();
     } catch (error) {
       console.error("Error printing invoice:", error);
-      alert("Failed to print invoice. Please try again.");
+      errorAlert("Failed to print invoice. Please try again.");
     }
   }
 

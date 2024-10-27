@@ -88,7 +88,12 @@ function formatRupiahv2(amount) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
 function inputToRupiah(value) {
+  if (typeof value !== "string") {
+    value = value.toString();
+  }
+
   const cleanedValue = value.replace(/[^,\d]/g, "");
   const [whole, fraction] = cleanedValue.split(",");
 
