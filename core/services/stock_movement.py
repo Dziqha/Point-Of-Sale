@@ -28,14 +28,19 @@ class StockMovement(BaseModel):
                            (self.quantity_change, self.product_id))
 
         conn.commit()
-        affected_rows = cursor.rowcount
-        conn.close()
-        
-        if affected_rows > 0:
-            return f"Stock movement for product ID {self.product_id} created successfully and stock updated."
-        else:
-            return f"Failed to create stock movement for product ID {self.product_id}."
+        success = cursor.rowcount > 0
+        self.movement_id = cursor.lastrowid if success else None
 
+        conn.close()
+        response = {
+            "status": "success" if success else "failed",
+            "message": "Stock movement created successfully." if success else "Failed to create stock movement."
+        }
+
+        if success:
+            response["movement_id"] = self.movement_id
+
+        return response
     def get_all(self):
         conn, cursor = db.init_db()
         cursor.execute('''
@@ -59,8 +64,17 @@ class StockMovement(BaseModel):
             WHERE sm.movement_id = ?
         ''', (movement_id,))
         movement = cursor.fetchone()
+        success = cursor.rowcount > 0
         conn.close()
-        return movement
+        response = {
+            "status": "success" if success else "failed",
+            "message": "Stock movement found" if success else "Failed to find stock movement"
+        }
+
+        if success:
+            response["movement"] = movement
+
+        return response
 
     def update(self):
         if self.movement_id is None:
@@ -74,14 +88,17 @@ class StockMovement(BaseModel):
                        (self.product_id, self.user_id, self.movement_type,
                         self.quantity_change, self.reason, self.movement_id))
         conn.commit()
-        affected_rows = cursor.rowcount
+        success = cursor.rowcount > 0
         conn.close()
         
-        if affected_rows > 0:
-            return f"Stock movement ID {self.movement_id} updated successfully."
-        else:
-            return f"Failed to update stock movement ID {self.movement_id} or it does not exist."
+        response = {
+            "status": "success" if success else "failed",
+            "message": "Stock movement updated successfully." if success else "Failed to update stock movement."
+        }
+        if success:
+            response["movement_id"] = self.movement_id
         
+        return response
     def delete(self):
         if self.movement_id is None:
             raise ValueError("Movement ID is required to delete a stock movement.")
@@ -89,14 +106,17 @@ class StockMovement(BaseModel):
         conn, cursor = db.init_db()
         cursor.execute('''DELETE FROM stock_movements WHERE movement_id = ?''', (self.movement_id,))
         conn.commit()
-        affected_rows = cursor.rowcount
+        success = cursor.rowcount > 0
         conn.close()
         
-        if affected_rows > 0:
-            return f"Stock movement ID {self.movement_id} deleted successfully."
-        else:
-            return f"Failed to delete stock movement ID {self.movement_id} or it does not exist."
-
+        response = {
+            "status": "success" if success else "failed",
+            "message": "Stock movement deleted successfully." if success else "Failed to delete stock movement."
+        }
+        if success:
+            response["movement_id"] = self.movement_id
+        
+        return response
     def get_by_product_id(self, product_id: int):
         conn, cursor = db.init_db()
         cursor.execute('''
@@ -108,5 +128,15 @@ class StockMovement(BaseModel):
             ORDER BY sm.movement_id DESC
         ''', (product_id,))
         movements = cursor.fetchall()
+        success = cursor.rowcount > 0
         conn.close()
-        return movements
+
+        response = {
+            "status": "success" if success else "failed",
+            "message": "Stock movements found" if success else "Failed to find stock movements"
+        }
+
+        if success:
+            response["movements"] = movements
+
+        return response
