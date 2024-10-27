@@ -692,8 +692,6 @@
           throw new Error("Cart is empty or not an array");
         }
 
-        console.log(cart);
-
         // Create transaction items
         for (const item of cart) {
           const itemResponse = await eel.create_transaction_item(

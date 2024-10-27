@@ -242,8 +242,7 @@
 
   async function getPromos() {
     const promos = await eel.get_all_promos()();
-    console.log(promos);
-    displayPromos(promos);
+    displayPromos(promos.data);
   }
 
   function displayPromos(promos) {
@@ -339,7 +338,11 @@
       selectedProductId
     )();
 
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     document.getElementById("add-promo-name").value = "";
     document.getElementById("add-promo-description").value = "";
@@ -353,7 +356,8 @@
   }
 
   async function editPromo(promoId) {
-    const promo = await eel.get_promo_by_id(promoId)();
+    const promoResult = await eel.get_promo_by_id(promoId)();
+    const promo = promoResult.data;
 
     document.getElementById("edit-promo-id").value = promo.promo_id;
     document.getElementById("edit-promo-name").value = promo.name;
@@ -431,7 +435,11 @@
       editSelectedProductId
     )();
 
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     const modal = document.getElementById("edit-promo-modal");
     modal.classList.remove("is-active");
@@ -448,7 +456,11 @@
   async function confirmDeletePromo() {
     if (promoToDelete) {
       const result = await eel.delete_promo(promoToDelete)();
-      successAlert(result);
+      if (result.status == "success") {
+        successAlert(result.message);
+      } else {
+        errorAlert(result.message);
+      }
       promoToDelete = null;
       const modal = document.getElementById("delete-promo-modal");
       modal.classList.remove("is-active");
@@ -473,21 +485,18 @@
         break;
       case "id":
         result = await eel.get_promo_by_id(searchTerm)();
-        if (result == "Promo not found") {
-          errorAlert(result);
-          return;
-        }
-        result = [result];
+        result.data = [result.data];
         break;
       default:
         errorAlert("Invalid search type.");
         return;
     }
 
-    if (result.length === 0) {
-      errorAlert("Promo not found");
+    if (result.status == "success") {
+      successAlert(result.message);
+      displayPromos(result.data);
     } else {
-      displayPromos(result);
+      errorAlert("Promo not found");
     }
   }
 

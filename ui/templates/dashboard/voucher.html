@@ -23,7 +23,7 @@
     class="input"
     type="text"
     id="search-input"
-    placeholder="Search customer"
+    placeholder="Search voucher"
   />
   <button class="button" onclick="serachVoucher()">
     <i class="fas fa-search mr-2"></i> Search
@@ -431,6 +431,7 @@
         break;
       case "id":
         result = await eel.get_voucher_by_id(searchTerm)();
+        result.data = [result.data];
         break;
       default:
         errorAlert("Invalid search type.");
@@ -439,7 +440,7 @@
 
     if (result.status == "success") {
       successAlert(result.message);
-      displayVouchers([result.data]);
+      displayVouchers(result.data);
     } else {
       errorAlert(result.message);
     }

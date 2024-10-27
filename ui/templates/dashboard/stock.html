@@ -158,7 +158,11 @@
 
   async function showStockMovements(productId) {
     const movements = await eel.get_stock_movements_by_product_id(productId)();
-    displayStockMovements(movements);
+    if (movements.status == "success") {
+      displayStockMovements(movements.data);
+    } else {
+      errorAlert(movements.message);
+    }
   }
 
   function displayStockMovements(movements) {
@@ -224,16 +228,19 @@
       return;
     }
 
-    const userId = getCurrentUserId();
-
     const result = await eel.create_stock_movement(
       selectedProductId,
-      userId,
+      sessionData.id,
       quantityChange > 0 ? "in" : "out",
       Math.abs(quantityChange),
       reason
     )();
-    successAlert(result);
+
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     closeAddMovementModal();
     getAllStockMovements();
@@ -249,10 +256,6 @@
     document.getElementById("product-search-results").innerHTML = "";
     document.getElementById("product-search-results").classList.add("hidden");
     selectedProductId = null;
-  }
-
-  function getCurrentUserId() {
-    return 1;
   }
 
   document.addEventListener("DOMContentLoaded", () => {

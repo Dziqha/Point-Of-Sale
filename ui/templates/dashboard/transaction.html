@@ -405,13 +405,13 @@
 
     switch (searchType) {
       case "id":
-        result = await eel.get_transaction_by_id(parseInt(transactionId))();
+        result = await eel.get_transaction_by_id(parseInt(searchTerm))();
 
-        if (result.status == "failed") {
+        if (result.status == "error") {
           errorAlert(result.message);
           return;
         } else {
-          displayTransactions([result]);
+          displayTransactions([result.data]);
         }
         break;
       case "customer":
@@ -424,9 +424,7 @@
 
         result = await eel.get_transactions_by_customer(customer.customer_id)();
 
-        console.log(result);
-
-        displayTransactions(result);
+        displayTransactions(result.data);
         break;
       default:
         errorAlert("Invalid search type.");
