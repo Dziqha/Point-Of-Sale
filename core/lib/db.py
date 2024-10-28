@@ -94,18 +94,7 @@ def get_db():
         FOREIGN KEY (product_id) REFERENCES products(product_id)
     );
     ''')
-
-    # Tabel invoices
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS invoices (
-        invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        transaction_id INTEGER,
-        invoice_number VARCHAR(50) NOT NULL UNIQUE,
-        issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id)
-    );
-    ''')
-
+    
     # Tabel promos
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS promos (

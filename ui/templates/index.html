@@ -29,7 +29,7 @@
               id="password"
               class="input"
               type="password"
-              placeholder="Input your secret password"
+              placeholder="Input your password"
             />
             <span class="icon is-small is-left">
               <i class="fas fa-lock"></i>
@@ -42,6 +42,9 @@
         <button class="button is-link w-full" onclick="login()">Login</button>
       </div>
     </div>
+    <footer class="card-footer">
+      <a class="card-footer-item">Version 1.0</a>
+    </footer>
   </div>
 </div>
 
@@ -50,24 +53,32 @@
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    const token = await eel.login(username, password)();
+    const response = await eel.login(username, password)();
 
-    if (token) {
-      set_cookie("jwt", token, 1);
+    console.log(response);
 
-      const sessionData = await eel.get_current_session(token)();
+    if (response.status === "success") {
+      set_cookie("jwt", response.token, 1);
 
-      if (sessionData.role === "cashier") {
-        window.location.href = "pos/index.html";
-      } else if (sessionData.role === "admin") {
-        window.location.href = "dashboard/index.html";
-      } else if (sessionData.role === "superuser") {
-        window.location.href = "settings/users.html";
+      const sessionResponse = await eel.get_current_session(response.token)();
+
+      if (sessionResponse.status === "success") {
+        const sessionData = sessionResponse.data;
+
+        if (sessionData.role === "cashier") {
+          window.location.href = "pos/index.html";
+        } else if (sessionData.role === "admin") {
+          window.location.href = "dashboard/index.html";
+        } else if (sessionData.role === "superuser") {
+          window.location.href = "settings/users.html";
+        } else {
+          errorAlert("User  role not recognized.");
+        }
       } else {
-        errorAlert("User role not recognized.");
+        errorAlert(sessionResponse.message);
       }
     } else {
-      errorAlert("Login failed. Please check your credentials.");
+      errorAlert(response.message);
     }
   }
 

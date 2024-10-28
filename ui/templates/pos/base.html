@@ -133,24 +133,31 @@
     const token = getCookie("jwt");
     const result = await eel.change_password(token, oldPassword, newPassword)();
 
-    if (result.success) {
+    if (result.status === "success") {
       successAlert(result.message);
       closeModal();
+    } else {
       errorAlert(result.message);
     }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     token = getCookie("jwt");
-
     if (!token) {
       window.location.href = "../index.html";
     }
 
-    sessionData = await eel.get_current_session(token)();
+    sessionResponse = await eel.get_current_session(token)();
+
+    if (sessionResponse.status == "error") {
+      errorAlert(sessionResponse.message);
+      return;
+    }
+
+    sessionData = sessionResponse.data;
 
     if (
-      !sessionData.id ||
+      !sessionData.user_id ||
       !sessionData.username ||
       !sessionData.role == "cashier"
     ) {

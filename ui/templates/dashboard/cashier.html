@@ -140,8 +140,15 @@
   let displayUserIdCounter = 1;
 
   async function getUsers() {
-    const role = "cashier";
-    const users = await eel.get_user_by_role(role)();
+    const usersResponse = await eel.get_user_by_role("cashier")();
+
+    if (usersResponse.status == "error") {
+      errorAlert(usersResponse.message);
+      return;
+    }
+
+    const users = usersResponse.data;
+
     const modifiedUsers = users.map((user) => ({
       actualId: user.id,
       username: user.username,
@@ -193,7 +200,11 @@
 
     const result = await eel.create_user(username, password, role)();
 
-    successAlert(result);
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     document.getElementById("add-user-username").value = "";
     document.getElementById("add-user-password").value = "";
@@ -233,7 +244,11 @@
 
     const result = await eel.update_user(actualId, newPassword)();
 
-    successAlert("User updated successfully!");
+    if (result.status == "success") {
+      successAlert(result.message);
+    } else {
+      errorAlert(result.message);
+    }
 
     const modal = document.getElementById("edit-user-modal");
     modal.classList.remove("is-active");
@@ -251,7 +266,11 @@
   async function confirmDeleteUser() {
     if (userToDelete) {
       const result = await eel.delete_user(userToDelete)();
-      successAlert(result);
+      if (result.status == "success") {
+        successAlert(result.message);
+      } else {
+        errorAlert(result.message);
+      }
       userToDelete = null;
       const modal = document.getElementById("delete-user-modal");
       modal.classList.remove("is-active");
