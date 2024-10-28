@@ -313,7 +313,7 @@
           <td>${product.sku || ""}</td>
           <td>${product.barcode}</td>
           <td>${product.category_name || "N/A"}</td>
-          <td>${product.price}</td>
+          <td>${formatRupiahv2(product.price)}</td>
           <td>${product.stock}</td>
           <td>
             <button class="button is-info is-small" onclick="showProductDetails(${
@@ -392,7 +392,9 @@
       <div class="field">
         <label class="label">Price</label>
         <div class="control">
-          <input class="input" type="text" value="${product.price}" readonly />
+          <input class="input" type="text" value="${formatRupiahv2(
+            product.price
+          )}" readonly />
         </div>
       </div>
       <div class="field">

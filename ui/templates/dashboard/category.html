@@ -192,19 +192,25 @@
   }
 
   async function addCategory() {
-    const name = document.getElementById("add-category-name").value;
-    const description = document.getElementById(
+    const nameInput = document.getElementById("add-category-name");
+    const descriptionInput = document.getElementById(
       "add-category-description"
-    ).value;
+    );
+    const name = nameInput.value;
+    const description = descriptionInput.value;
 
     if (!name) {
       errorAlert("Please enter a category name.");
       return;
     }
+
     const result = await eel.create_category(name, description)();
     if (result.status === "success") {
       successAlert(result.message);
       closeModal("add-category-modal");
+      // Clear form fields
+      nameInput.value = "";
+      descriptionInput.value = "";
       getCategories();
     } else {
       errorAlert(result.message);

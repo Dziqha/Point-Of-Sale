@@ -7,6 +7,12 @@ from core.services.promo import Promo
 def create_promo(name: str, description: str, discount_percentage: float, start_date: str, end_date: str, product_id: int):
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+    if start_date > end_date:
+        return {
+            "status": "error",
+            "message": "The start date cannot be later than the end date.",
+        }
     
     promo = Promo(product_id=product_id, name=name, description=description, discount_percentage=Decimal(discount_percentage), start_date=start_date, end_date=end_date)
     response = promo.create()

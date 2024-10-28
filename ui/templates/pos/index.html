@@ -382,17 +382,16 @@
   }
 
   async function updateQuantity(index, newQuantity) {
-    const productDetails = await eel.get_product_by_id(
+    const productResponse = await eel.get_product_by_id(
       cart[index].product_id
     )();
 
-    if (
-      typeof productDetails === "string" &&
-      productDetails === "Product not found"
-    ) {
-      errorAlert(productDetails);
+    if (productResponse.status == "error") {
+      errorAlert(productResponse.message);
       return;
     }
+
+    const productDetails = productResponse.data;
 
     const stock = productDetails.stock;
 
@@ -577,14 +576,14 @@
       const code = voucherInput.value.trim();
       if (code) {
         const result = await eel.get_voucher_by_code(code)();
-        const isValid = result.data.voucher_id !== undefined;
+        const isValid = result.status === "success";
         updateValidationUI(
           voucherInput,
           voucherHelp,
           isValid,
           isValid
-            ? `${result.data.discount_value}% Discount applyed`
-            : "Invalid voucher"
+            ? `${result.data.discount_value}% Discount applied`
+            : result.message || "Invalid voucher"
         );
       } else {
         resetField(voucherInput, voucherHelp);
@@ -596,12 +595,14 @@
       const phone = document.getElementById("customer-phone").value.trim();
       if (phone) {
         const result = await eel.get_customer_by_phone(phone)();
-        const isValid = result.data.customer_id !== undefined;
+        const isValid = result.status === "success";
         updateValidationUI(
           document.getElementById("customer-phone"),
           customerHelp,
           isValid,
-          isValid ? result.data.name : "No customer with that phone number"
+          isValid
+            ? result.data.name
+            : result.message || "No customer with that phone number"
         );
       } else {
         resetField(document.getElementById("customer-phone"), customerHelp);
@@ -684,7 +685,7 @@
 
     try {
       const transactionResponse = await eel.create_transaction(
-        sessionData.id,
+        sessionData.user_id,
         customerId,
         paidAmount,
         voucherId

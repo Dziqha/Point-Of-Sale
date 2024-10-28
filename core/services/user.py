@@ -138,12 +138,12 @@ class User(Person, BaseModel):
         if affected_rows > 0:
             return {
                 "status": "success",
-                "message": f"User  '{self.username}' deleted successfully."
+                "message": f"User with ID '{self.user_id}' deleted successfully."
             }
         else:
             return {
                 "status": "error",
-                "message": f"Failed to delete user '{self.username}' or user does not exist."
+                "message": f"Failed to delete user with ID '{self.user_id}' or user does not exist."
             }
 
     def login(self, username: str, password: str) -> Dict[str, Union[str, Any]]:
