@@ -194,7 +194,9 @@
 
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${item.product_name} ${item.sku ? `(${item.sku})` : ""}</td>
+        <td>${item.product_name} ${
+        item.product_sku ? `(${item.product_sku})` : ""
+      }</td>
         <td>${quantity}</td>
         <td>${formatRupiahv2(price)}</td>
         <td>${formatRupiahv2(itemDiscount)}</td>
@@ -305,6 +307,14 @@
         paidAmount > totalWithTax ? paidAmount - totalWithTax : 0;
 
       let invoiceText = "=== INVOICE ===\n\n";
+      invoiceText += `Reprint: ${new Date().toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })}\n\n`;
       invoiceText += `ID: ${transaction.transaction_id}\n`;
       invoiceText += `Date: ${new Date(transaction.created_at).toLocaleString(
         "en-US",
@@ -333,7 +343,7 @@
           const itemTotal = totalPrice - itemDiscount;
 
           invoiceText += `${item.product_name}${
-            item.sku ? ` (${item.sku})` : ""
+            item.product_sku ? ` (${item.product_sku})` : ""
           }\n`;
           invoiceText += `  ${quantity} x ${formatRupiahv2(
             price

@@ -1,8 +1,10 @@
 import eel
 from core.services.user import User
 from core.lib.hash import hash_password, verify_password
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def create_user(username: str, password: str, role: str):
     user = User(username=username, password=hash_password(password), role=role)
     response = user.create()
@@ -13,6 +15,7 @@ def create_user(username: str, password: str, role: str):
     }
 
 @eel.expose
+@auth_required(AuthLevel.SUPERUSER)
 def get_all_users():
     user = User('', '', '')
     response = user.get_all()
@@ -38,6 +41,7 @@ def get_all_users():
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_user_by_id(user_id: int):
     user = User('', '', '')
     response = user.get_by_id(user_id)
@@ -58,6 +62,7 @@ def get_user_by_id(user_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def update_user(user_id: int, password: str):
     user_data = get_user_by_id(user_id)
     
@@ -87,6 +92,7 @@ def update_user(user_id: int, password: str):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_user(user_id: int):
     user = User('', '', '')
     user.user_id = user_id
@@ -126,6 +132,7 @@ def get_current_session(token: str):
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def change_password(token: str, old_password: str, new_password: str):
     user = User('', '', '')
     session_data = user.get_current_session(token)
@@ -173,6 +180,7 @@ def change_password(token: str, old_password: str, new_password: str):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_user_by_role(role: str):
     try:
         user = User('', '', '')

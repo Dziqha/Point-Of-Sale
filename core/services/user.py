@@ -5,8 +5,7 @@ from .base_model import BaseModel
 from .person import Person
 from core.lib import db
 from core.lib.hash import verify_password
-
-SECRET_KEY = "super_duper_secret_key"
+from core.middlewares.auth import SECRET_KEY
 
 class User(Person, BaseModel):
     def __init__(self, username: str, password: str, role: str):

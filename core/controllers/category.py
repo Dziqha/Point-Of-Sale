@@ -1,7 +1,9 @@
 import eel
 from core.services.category import Category
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def create_category(name: str, description: str = ""):
     category = Category(name=name, description=description)
     response = category.create()
@@ -13,6 +15,7 @@ def create_category(name: str, description: str = ""):
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_categories():
     category = Category('', '')
     response = category.get_all()
@@ -38,6 +41,7 @@ def get_all_categories():
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_category_by_id(category_id: int):
     category = Category('', '')
     response = category.get_by_id(category_id)
@@ -49,6 +53,7 @@ def get_category_by_id(category_id: int):
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def update_category(category_id: int, name: str, description: str):
     category = Category(name=name, description=description)
     category.category_id = category_id
@@ -60,6 +65,7 @@ def update_category(category_id: int, name: str, description: str):
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_category(category_id: int):
     category = Category('', '')
     category.category_id = category_id

@@ -2,8 +2,10 @@ import eel
 from datetime import datetime
 from decimal import Decimal
 from core.services.promo import Promo
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def create_promo(name: str, description: str, discount_percentage: float, start_date: str, end_date: str, product_id: int):
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
@@ -23,6 +25,7 @@ def create_promo(name: str, description: str, discount_percentage: float, start_
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def update_promo(promo_id: int, name: str, description: str, discount_percentage: float, start_date: str, end_date: str, product_id: int):
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
@@ -36,6 +39,7 @@ def update_promo(promo_id: int, name: str, description: str, discount_percentage
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_promo(promo_id: int):
     promo = Promo()
     promo.promo_id = promo_id
@@ -46,6 +50,7 @@ def delete_promo(promo_id: int):
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_promo_by_id(promo_id: int):
     promo = Promo()
     response = promo.get_by_id(promo_id)
@@ -73,6 +78,7 @@ def get_promo_by_id(promo_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_promos():
     promo = Promo()
     response = promo.get_all()
@@ -102,6 +108,7 @@ def get_all_promos():
         }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_active_product_promo(product_id: int):
     promo = Promo()
     response = promo.get_active_product_promo(product_id)
@@ -129,6 +136,7 @@ def get_active_product_promo(product_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_promos_by_name(name: str):
     promo = Promo()
     response = promo.get_by_name(name)

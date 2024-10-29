@@ -83,6 +83,12 @@
     </header>
     <section class="modal-card-body">
       <h2 class="text-xl text-white">Total:</h2>
+      <h2
+        id="modal-total-before-voucher"
+        class="text-xl text-gray-400 line-through hidden"
+      >
+        Rp. 0.00
+      </h2>
       <h2 id="modal-total-amount" class="text-2xl font-bold text-white">
         Rp. 0.00
       </h2>
@@ -572,11 +578,46 @@
       help.classList.remove("is-success", "is-danger");
     }
 
+    let voucherApplied = false;
+    let originalTotal = 0;
+
     async function validateVoucher() {
       const code = voucherInput.value.trim();
+      const modalTotalBefore = document.getElementById(
+        "modal-total-before-voucher"
+      );
+      const modalTotalAfter = document.getElementById("modal-total-amount");
+
       if (code) {
         const result = await eel.get_voucher_by_code(code)();
         const isValid = result.status === "success";
+
+        if (isValid && !voucherApplied) {
+          // Get current total amount
+          originalTotal = parseFloat(
+            modalTotalAfter.textContent
+              .replace("Rp. ", "")
+              .replace(/\./g, "")
+              .replace(",", ".")
+          );
+
+          // Calculate discount
+          const discountPercentage = parseFloat(result.data.discount_value);
+          const discountAmount = (originalTotal * discountPercentage) / 100;
+          const totalAfterDiscount = originalTotal - discountAmount;
+
+          // Show original price with strikethrough
+          modalTotalBefore.textContent = `Rp. ${formatRupiah(originalTotal)}`;
+          modalTotalBefore.classList.remove("hidden");
+
+          // Update discounted price
+          modalTotalAfter.textContent = `Rp. ${formatRupiah(
+            totalAfterDiscount
+          )}`;
+
+          voucherApplied = true;
+        }
+
         updateValidationUI(
           voucherInput,
           voucherHelp,
@@ -586,7 +627,11 @@
             : result.message || "Invalid voucher"
         );
       } else {
+        // Reset totals when voucher is removed
+        modalTotalBefore.classList.add("hidden");
+        modalTotalAfter.textContent = `Rp. ${formatRupiah(originalTotal)}`;
         resetField(voucherInput, voucherHelp);
+        voucherApplied = false;
       }
       validateCheckout();
     }
@@ -631,6 +676,9 @@
     const checkoutButton = document.getElementById("checkout-button");
     checkoutButton.addEventListener("click", () => {
       const total = document.getElementById("total").textContent;
+      document
+        .getElementById("modal-total-before-voucher")
+        .classList.add("hidden");
       document.getElementById("modal-total-amount").textContent =
         formatRupiah(total);
       validateCheckout();
@@ -844,10 +892,15 @@
                                   // Calculate item total after discount
                                   const itemTotal = totalPrice - itemDiscount;
 
+                                  console.log(item);
+
                                   return `
                                     <tr>
                                         <td>${item.product_name} ${
-                                    item.sku ? `(${item.sku})` : ""
+                                    item.product_sku != null &&
+                                    item.product_sku !== ""
+                                      ? `(${item.product_sku})`
+                                      : ""
                                   }</td>
                                         <td>${quantity}</td>
                                         <td>${formatRupiahv2(price)}</td>
@@ -997,7 +1050,7 @@
           const itemTotal = totalPrice - itemDiscount;
 
           invoiceText += `${item.product_name}${
-            item.sku ? ` (${item.sku})` : ""
+            item.product_sku ? ` (${item.product_sku})` : ""
           }\n`;
           invoiceText += `  ${quantity} x ${formatRupiahv2(
             price

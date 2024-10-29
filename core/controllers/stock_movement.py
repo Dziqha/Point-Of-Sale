@@ -1,7 +1,9 @@
 import eel
 from core.services.stock_movement import StockMovement
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def create_stock_movement(product_id: int, user_id: int, movement_type: str, quantity_change: int, reason: str = ""):
     movement = StockMovement(product_id=product_id, user_id=user_id, movement_type=movement_type, quantity_change=quantity_change, reason=reason)
     response = movement.create()
@@ -12,6 +14,7 @@ def create_stock_movement(product_id: int, user_id: int, movement_type: str, qua
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_stock_movements():
     movement = StockMovement(0, 0, '', 0)
     response = movement.get_all()
@@ -40,6 +43,7 @@ def get_all_stock_movements():
             "message": response["message"]
         }
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_stock_movement_by_id(movement_id: int):
     movement = StockMovement(0, 0, '', 0)
     response = movement.get_by_id(movement_id)
@@ -68,6 +72,7 @@ def get_stock_movement_by_id(movement_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_stock_movements_by_product_id(product_id: int):
     movement = StockMovement(0, 0, '', 0)
     response = movement.get_by_product_id(product_id)

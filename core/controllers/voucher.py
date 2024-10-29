@@ -2,8 +2,10 @@ import eel
 from datetime import datetime
 from decimal import Decimal
 from core.services.voucher import Voucher
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def create_voucher(code: str, discount_value: float, expiration_date: str, quota: int):
     expiration_date = datetime.strptime(expiration_date, "%Y-%m-%d")
     voucher = Voucher(code=code, discount_value=Decimal(discount_value), expiration_date=expiration_date, quota=quota)
@@ -16,6 +18,7 @@ def create_voucher(code: str, discount_value: float, expiration_date: str, quota
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def update_voucher(voucher_id: int, code: str, discount_value: float, expiration_date: str, quota: int):
     expiration_date = datetime.strptime(expiration_date, "%Y-%m-%d")
     voucher = Voucher(code=code, discount_value=Decimal(discount_value), expiration_date=expiration_date, quota=quota)
@@ -28,6 +31,7 @@ def update_voucher(voucher_id: int, code: str, discount_value: float, expiration
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_voucher(voucher_id: int):
     voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
     voucher.voucher_id = voucher_id
@@ -39,6 +43,7 @@ def delete_voucher(voucher_id: int):
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_voucher_by_id(voucher_id: int):
     voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
     response = voucher.get_by_id(voucher_id)
@@ -63,6 +68,7 @@ def get_voucher_by_id(voucher_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_voucher_by_code(code: str):
     voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
     response = voucher.get_by_code(code)
@@ -87,6 +93,7 @@ def get_voucher_by_code(code: str):
         }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_all_voucher_by_code(code: str):
     voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
     response = voucher.get_all_by_code(code)
@@ -112,6 +119,7 @@ def get_all_voucher_by_code(code: str):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_vouchers():
     voucher = Voucher(code="", discount_value=Decimal(0), expiration_date=datetime.now(), quota=0)
     response = voucher.get_all()

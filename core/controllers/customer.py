@@ -1,7 +1,9 @@
 import eel
 from core.services.customer import Customer
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def create_customer(name: str, email: str = "", phone: str = "", address: str = ""):
     customer = Customer(name=name, email=email, phone=phone, address=address)
     response = customer.create()
@@ -13,6 +15,7 @@ def create_customer(name: str, email: str = "", phone: str = "", address: str = 
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def update_customer(customer_id: int, name: str, email: str = "", phone: str = "", address: str = ""):
     customer = Customer(name=name, email=email, phone=phone, address=address)
     customer.customer_id = customer_id
@@ -24,6 +27,7 @@ def update_customer(customer_id: int, name: str, email: str = "", phone: str = "
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def delete_customer(customer_id: int):
     customer = Customer(name="")
     customer.customer_id = customer_id
@@ -35,6 +39,7 @@ def delete_customer(customer_id: int):
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_customer_by_id(customer_id: int):
     customer = Customer(name="")
     response = customer.get_by_id(customer_id)
@@ -52,6 +57,7 @@ def get_customer_by_id(customer_id: int):
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_customer_by_phone(customer_phone: str):
     customer = Customer(name="")
     response = customer.get_by_phone(customer_phone)
@@ -69,6 +75,7 @@ def get_customer_by_phone(customer_phone: str):
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_customers():
     customer = Customer(name="")
     response = customer.get_all()

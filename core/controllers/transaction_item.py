@@ -1,8 +1,10 @@
 import eel
 from decimal import Decimal
 from core.services.transaction_item import TransactionItem
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def create_transaction_item(transaction_id: int, product_id: int, quantity: int, price: float, discount: float, total: float):
     transaction_item = TransactionItem(
         transaction_id=transaction_id,
@@ -34,6 +36,7 @@ def create_transaction_item(transaction_id: int, product_id: int, quantity: int,
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def update_transaction_item(transaction_item_id: int, product_id: int, quantity: int, price: float, discount: float, total: float):
     transaction_item = TransactionItem(
         transaction_id=0,
@@ -48,6 +51,7 @@ def update_transaction_item(transaction_item_id: int, product_id: int, quantity:
     return result
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_transaction_item(transaction_item_id: int):
     transaction_item = TransactionItem(
         transaction_id=0, 
@@ -62,6 +66,7 @@ def delete_transaction_item(transaction_item_id: int):
     return result
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_transaction_item_by_id(transaction_item_id: int):
     transaction_item = TransactionItem(
         transaction_id=0, 
@@ -90,6 +95,7 @@ def get_transaction_item_by_id(transaction_item_id: int):
     return {"status": "error", "message": "Transaction item not found."}
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_all_transaction_items_by_transaction_id(transaction_id: int):
     transaction_item = TransactionItem(
         transaction_id=transaction_id,

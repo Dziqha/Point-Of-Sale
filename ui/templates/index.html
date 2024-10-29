@@ -55,10 +55,9 @@
 
     const response = await eel.login(username, password)();
 
-    console.log(response);
-
     if (response.status === "success") {
       set_cookie("jwt", response.token, 1);
+      await eel.set_jwt_token(response.token)();
 
       const sessionResponse = await eel.get_current_session(response.token)();
 

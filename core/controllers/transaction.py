@@ -1,8 +1,10 @@
 import eel
 from typing import Optional
 from core.services.transaction import Transaction
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def create_transaction(user_id: int, customer_id: int, paid_amount: float, voucher_id: Optional[int] = None):
     transaction = Transaction(
         user_id=user_id,
@@ -19,6 +21,7 @@ def create_transaction(user_id: int, customer_id: int, paid_amount: float, vouch
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def update_transaction(transaction_id: int, paid_amount: float, voucher_id: Optional[int] = None):
     transaction = Transaction(
         user_id=0,
@@ -35,6 +38,7 @@ def update_transaction(transaction_id: int, paid_amount: float, voucher_id: Opti
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_transaction(transaction_id: int):
     transaction = Transaction(
         user_id=0, 
@@ -50,6 +54,7 @@ def delete_transaction(transaction_id: int):
     }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_transaction_by_id(transaction_id: int):
     transaction = Transaction(
         user_id=0, 
@@ -80,6 +85,7 @@ def get_transaction_by_id(transaction_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_transactions():
     transaction = Transaction(
         user_id=0, 
@@ -112,6 +118,7 @@ def get_all_transactions():
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_transactions_by_customer(customer_id: int):
     transaction = Transaction(
         user_id=0,
@@ -144,6 +151,7 @@ def get_transactions_by_customer(customer_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_transaction_stats():
     transaction = Transaction(
         user_id=0,

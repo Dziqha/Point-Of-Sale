@@ -1,7 +1,9 @@
 import eel
 from core.services.product import Product
+from core.middlewares.auth import auth_required, AuthLevel
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def create_product(name: str, sku: str, barcode: str, category_id: int, price: float, description: str = ""):
     product = Product(name=name, sku=sku, barcode=barcode, category_id=category_id, price=price, description=description)
     response = product.create()
@@ -13,6 +15,7 @@ def create_product(name: str, sku: str, barcode: str, category_id: int, price: f
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_all_products():
     product = Product('', '', '', 0, 0)
     response = product.get_all()
@@ -45,6 +48,7 @@ def get_all_products():
         }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def get_product_by_id(product_id: int):
     product = Product('', '', '', 0, 0)
     response = product.get_by_id(product_id)
@@ -75,10 +79,10 @@ def get_product_by_id(product_id: int):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def update_product(product_id: int, name: str, sku: str, barcode: str, category_id: int, stock: int, price: float, description: str = ""):
     product = Product(name=name, sku=sku, barcode=barcode, category_id=category_id, price=price, description=description)
     product.product_id = product_id
-    product.stock = stock
     response = product.update()
 
     return {
@@ -88,6 +92,7 @@ def update_product(product_id: int, name: str, sku: str, barcode: str, category_
     }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def get_out_of_stock():
     product = Product('', '', '', 0, 0)
     response = product.get_out_of_stock()
@@ -120,6 +125,7 @@ def get_out_of_stock():
         }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def search_products_by_name(name: str):
     product = Product('', '', '', 0, 0)
     response = product.search_by_name(name)
@@ -152,6 +158,7 @@ def search_products_by_name(name: str):
         }
 
 @eel.expose
+@auth_required(AuthLevel.CASHIER)
 def search_product_by_barcode(barcode: str):
     product = Product('', '', '', 0, 0)
     response = product.search_by_barcode(barcode)
@@ -184,6 +191,7 @@ def search_product_by_barcode(barcode: str):
         }
 
 @eel.expose
+@auth_required(AuthLevel.ADMIN)
 def delete_product(product_id: int):
     product = Product('', '', '', 0, 0)
     product.product_id = product_id

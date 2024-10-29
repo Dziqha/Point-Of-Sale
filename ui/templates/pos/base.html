@@ -109,8 +109,9 @@
 </div>
 
 <script>
-  function logout() {
+  async function logout() {
     set_cookie("jwt", "", -1);
+    await eel.reset_jwt_token()();
     window.location.href = "../index.html";
   }
 

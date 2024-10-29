@@ -139,7 +139,9 @@
       const productElement = document.createElement("div");
       productElement.className =
         "p-2 hover:bg-gray-700 cursor-pointer text-white";
-      productElement.innerHTML = `<p>${product.name} (${product.sku}) - ${product.barcode}</p>`;
+      productElement.innerHTML = `<p>${product.name}${
+        product.sku ? ` (${product.sku})` : ""
+      } - ${product.barcode}</p>`;
       productElement.onclick = () => onSelectCallback(product);
       resultsContainer.appendChild(productElement);
     });
