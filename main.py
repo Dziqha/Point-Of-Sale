@@ -1,5 +1,6 @@
 import eel
 import core.controllers.user
+import core.controllers.cashier
 import core.controllers.category
 import core.controllers.product
 import core.controllers.promo

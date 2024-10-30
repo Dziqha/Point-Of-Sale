@@ -140,7 +140,7 @@
   let displayUserIdCounter = 1;
 
   async function getUsers() {
-    const usersResponse = await eel.get_user_by_role("cashier")();
+    const usersResponse = await eel.get_all_cashiers()();
 
     if (usersResponse.status == "error") {
       errorAlert(usersResponse.message);
@@ -191,14 +191,13 @@
   async function addUser() {
     const username = document.getElementById("add-user-username").value;
     const password = document.getElementById("add-user-password").value;
-    const role = "cashier";
 
     if (!username || !password) {
       errorAlert("Please enter both username and password.");
       return;
     }
 
-    const result = await eel.create_user(username, password, role)();
+    const result = await eel.create_cashier(username, password)();
 
     if (result.status == "success") {
       successAlert(result.message);
@@ -242,7 +241,7 @@
       return;
     }
 
-    const result = await eel.update_user(actualId, newPassword)();
+    const result = await eel.update_cashier(actualId, "", newPassword)();
 
     if (result.status == "success") {
       successAlert(result.message);
@@ -265,7 +264,7 @@
 
   async function confirmDeleteUser() {
     if (userToDelete) {
-      const result = await eel.delete_user(userToDelete)();
+      const result = await eel.delete_cashier(userToDelete)();
       if (result.status == "success") {
         successAlert(result.message);
       } else {

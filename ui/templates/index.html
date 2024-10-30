@@ -43,7 +43,9 @@
       </div>
     </div>
     <footer class="card-footer">
-      <a class="card-footer-item">Version 1.0</a>
+      <a class="card-footer-item"
+        >Version&nbsp;<span id="software-version"></span
+      ></a>
     </footer>
   </div>
 </div>
@@ -88,6 +90,17 @@
     date.setTime(date.getTime() + hours * 60 * 60 * 1000);
     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
   }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const versionResponse = await eel.get_software_version()();
+    if (versionResponse.status === "success") {
+      const versionInfo = versionResponse.data;
+      document.getElementById("software-version").textContent =
+        versionInfo.version;
+    } else {
+      document.getElementById("software-version").textContent = "Unknown";
+    }
+  });
 </script>
 
 {% endblock %}
