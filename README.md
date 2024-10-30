@@ -81,9 +81,16 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki Python 3.x terinstal di sis
 
   Kamu sudah bisa melakukan transaksi 💸
 
-## Kontribusi 🤝
+## Kontributor 🤝
 
-Kontribusi sangat diterima! Silakan buat issue atau pull request untuk menambahkan fitur baru atau memperbaiki bug.
+Software ini dibuat oleh Kelompok 5 dari kelas Teknik Informatika B 2023
+
+| NIM             | Nama                   |
+| --------------- | ---------------------- |
+| **23051204039** | Abdurrohman Haadziq    |
+| **23051204040** | Galih Bagus Hardiyanto |
+| **23051204057** | Raihan Syaputra Fikri  |
+| **23051204070** | Fanny Ayu Noverita     |
 
 <a href="https://github.com/Hanfik27/Point-Of-Sale/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Hanfik27/Point-Of-Sale" />
