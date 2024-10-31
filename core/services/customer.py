@@ -4,7 +4,7 @@ from .base_model import BaseModel
 from .person import Person
 from core.lib import db
 
-class Customer(Person, BaseModel):
+class Customer(Person):
     def __init__(self, name: str, email: str = "", phone: str = "", address: str = ""):
         super().__init__(name=name)
         self.customer_id: Optional[int] = None

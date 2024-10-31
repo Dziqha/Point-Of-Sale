@@ -7,7 +7,7 @@ from core.lib import db
 from core.lib.hash import verify_password
 from core.middlewares.auth import SECRET_KEY
 
-class User(Person, BaseModel):
+class User(Person):
     def __init__(self, username: str, password: str, role: str):
         super().__init__(name=username)
         self.user_id: Optional[int] = None
