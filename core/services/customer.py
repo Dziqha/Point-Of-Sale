@@ -1,6 +1,4 @@
-from datetime import datetime
-from typing import Optional, Dict, Any, Union, Tuple
-from .base_model import BaseModel
+from typing import Optional, Dict, Any, Union
 from .person import Person
 from core.lib import db
 

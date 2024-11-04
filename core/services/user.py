@@ -1,7 +1,6 @@
 import jwt
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Union, Any
-from .base_model import BaseModel
 from .person import Person
 from core.lib import db
 from core.lib.hash import verify_password

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Tuple, Any
+from typing import Optional, Any
 from .base_model import BaseModel
 from core.lib import db
 

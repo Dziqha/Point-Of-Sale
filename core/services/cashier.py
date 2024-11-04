@@ -1,5 +1,5 @@
 from .user import User
-from typing import Optional, Dict, Union, Any
+from typing import Dict, Union, Any
 from core.lib import db
 
 class Cashier(User):

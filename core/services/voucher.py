@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, Dict, Any, Union
 from .base_model import BaseModel
 from core.lib import db
 
